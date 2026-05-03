@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎓 EduInsights Pro
 
-## Getting Started
+> **High-Performance G.C.E. O/L Analytics Dashboard**
 
-First, run the development server:
+EduInsights is a production-grade analytics platform designed for educators to track, analyze, and report student examination performance with executive-level precision.
 
+![Dashboard Preview](/logo.png)
+
+## ✨ Key Features
+
+-   **📊 Dynamic Analytical Dashboard**: Real-time visualization of subject performance, yearly trends, and success distributions.
+-   **📄 Snapshot Pro PDF Engine**: Generate high-fidelity institutional reports with formal verification blocks and live chart embedding.
+-   **📱 Fully Responsive**: Seamless experience across Desktop, Tablet, and Mobile with a dedicated navigation drawer.
+-   **🔐 Enterprise Security**: Robust Row Level Security (RLS) powered by Supabase, ensuring data privacy per institution.
+-   **🌐 Multi-Language Support**: Full support for English and Sinhala (සිංහල).
+-   **📥 Bulk Data Import**: Effortless Excel (.xlsx) and CSV uploads for rapid data population.
+
+## 🛠 Tech Stack
+
+-   **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
+-   **Database & Auth**: [Supabase](https://supabase.com/)
+-   **Charts**: [Chart.js](https://www.chartjs.org/)
+-   **Styling**: Vanilla CSS with Modern Design Tokens
+-   **Reporting**: [jsPDF](https://rawgit.com/MrRio/jsPDF/master/docs/index.html) & [jsPDF-AutoTable](https://github.com/simonbengtsson/jspdf-autotable)
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/tharushi1019/edu-insights.git
+cd EduInsights
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure Environment Variables
+Create a `.env.local` file in the root directory:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Install Dependencies
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Database Setup
+Apply the `schema.sql` in your Supabase SQL Editor to initialize tables and RLS policies.
 
-## Learn More
+### 5. Run Development Server
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 📜 License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Distributed under the MIT License. See `LICENSE` for more information.
