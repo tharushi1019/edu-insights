@@ -361,19 +361,19 @@ export default function TrendsPage() {
                     responsive: true, 
                     maintainAspectRatio: false,
                     plugins: { 
-                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 30, font: { size: 14, weight: '600' } } },
-                        tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 16, borderRadius: 12, titleFont: { size: 14 }, bodyFont: { size: 14 } }
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 30, font: { size: 14, weight: 600 } } },
+                        tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 16, cornerRadius: 12, titleFont: { size: 14 }, bodyFont: { size: 14 } }
                     },
                     scales: { 
                         y: { 
-                            grid: { borderDash: [5, 5], color: '#e2e8f0' }, 
-                            ticks: { font: { size: 12, weight: '500' }, padding: 10 },
-                            title: { display: true, text: 'Number of Students', font: { size: 14, weight: '700' }, padding: 10 }
+                            grid: { color: '#e2e8f0' }, 
+                            ticks: { font: { size: 12, weight: 500 }, padding: 10 },
+                            title: { display: true, text: 'Number of Students', font: { size: 14, weight: 700 }, padding: 10 }
                         },
                         x: { 
                             grid: { display: false }, 
-                            ticks: { font: { size: 13, weight: '700' }, padding: 10 },
-                            title: { display: true, text: 'Academic Year', font: { size: 14, weight: '700' }, padding: 10 }
+                            ticks: { font: { size: 13, weight: 700 }, padding: 10 },
+                            title: { display: true, text: 'Academic Year', font: { size: 14, weight: 700 }, padding: 10 }
                         }
                     }
                 }} 
