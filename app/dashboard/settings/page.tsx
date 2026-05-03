@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/context/LanguageContext';
 
+export const dynamic = 'force-dynamic';
+
 export default function SettingsPage() {
   const { t } = useLanguage();
   const router = useRouter();

@@ -36,6 +36,8 @@ ChartJS.register(
   Filler
 );
 
+export const dynamic = 'force-dynamic';
+
 export default function Dashboard() {
   const { t } = useLanguage();
   // Chart refs

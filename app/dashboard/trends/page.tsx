@@ -25,6 +25,8 @@ ChartJS.register(
   Legend
 );
 
+export const dynamic = 'force-dynamic';
+
 export default function TrendsPage() {
   const { t } = useLanguage();
   const trendChartRef = useRef<any>(null);
