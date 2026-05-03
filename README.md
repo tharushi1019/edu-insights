@@ -1,27 +1,49 @@
 # 🎓 EduInsights Pro
 
+[![Next.js](https://img.shields.io/badge/Next.js-15+-black?logo=next.js)](https://nextjs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Database-green?logo=supabase)](https://supabase.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **High-Performance G.C.E. O/L Analytics Dashboard**
+> EduInsights is a production-grade analytics platform designed for educators to track, analyze, and report student examination performance with executive-level precision.
 
-EduInsights is a production-grade analytics platform designed for educators to track, analyze, and report student examination performance with executive-level precision.
+![Dashboard Preview](/dashboard-preview.png)
 
-![Dashboard Preview](/logo.png)
+## 🚀 Overview
+
+EduInsights Pro transforms raw examination data into actionable intelligence. Built with a focus on speed, security, and user experience, it empowers educational institutions to identify trends and optimize student outcomes.
 
 ## ✨ Key Features
 
--   **📊 Dynamic Analytical Dashboard**: Real-time visualization of subject performance, yearly trends, and success distributions.
--   **📄 Snapshot Pro PDF Engine**: Generate high-fidelity institutional reports with formal verification blocks and live chart embedding.
--   **📱 Fully Responsive**: Seamless experience across Desktop, Tablet, and Mobile with a dedicated navigation drawer.
--   **🔐 Enterprise Security**: Robust Row Level Security (RLS) powered by Supabase, ensuring data privacy per institution.
--   **🌐 Multi-Language Support**: Full support for English and Sinhala (සිංහල).
--   **📥 Bulk Data Import**: Effortless Excel (.xlsx) and CSV uploads for rapid data population.
+| Feature | Description |
+| :--- | :--- |
+| **📊 Analytics** | Real-time visualization of subject performance, yearly trends, and success distributions. |
+| **📄 Reporting** | **Snapshot Pro PDF Engine**: Generate high-fidelity reports with formal verification blocks. |
+| **📥 Data Management** | Effortless Excel (.xlsx) and CSV uploads for rapid data population. |
+| **📱 Mobile First** | Seamless experience across all devices with a dedicated navigation drawer. |
+| **🔐 Security** | Enterprise-grade Row Level Security (RLS) powered by Supabase. |
+| **🌐 Localization** | Native support for English and Sinhala (සිංහල). |
 
 ## 🛠 Tech Stack
 
--   **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
--   **Database & Auth**: [Supabase](https://supabase.com/)
--   **Charts**: [Chart.js](https://www.chartjs.org/)
--   **Styling**: Vanilla CSS with Modern Design Tokens
--   **Reporting**: [jsPDF](https://rawgit.com/MrRio/jsPDF/master/docs/index.html) & [jsPDF-AutoTable](https://github.com/simonbengtsson/jspdf-autotable)
+- **Frontend**: [Next.js](https://nextjs.org/) (App Router, React 19)
+- **Backend**: [Supabase](https://supabase.com/) (Auth, Database, RLS)
+- **Charts**: [Chart.js](https://www.chartjs.org/) & [React-Chartjs-2](https://react-chartjs-2.js.org/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Styling**: Vanilla CSS with Modern Design Tokens
+- **Reporting**: [jsPDF](https://github.com/parallax/jsPDF) & [jsPDF-AutoTable](https://github.com/simonbengtsson/jspdf-autotable)
+- **Data**: [SheetJS (XLSX)](https://sheetjs.com/)
+
+## 📁 Project Structure
+
+```text
+├── app/            # Next.js App Router (Pages & API)
+├── components/     # Reusable UI Components
+├── context/        # React Context Providers
+├── lib/            # Utility functions & Supabase Client
+├── public/         # Static assets (Images, Icons)
+└── schema.sql      # Database initialization script
+```
 
 ## 🚀 Getting Started
 
@@ -54,4 +76,6 @@ npm run dev
 ## 📜 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
- 
+
+---
+Built with ❤️ for Educators.
