@@ -69,7 +69,7 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     if (error) setError(error.message);
@@ -96,7 +96,7 @@ export default function SignupPage() {
           onClick={handleGoogleLogin}
           type="button" 
           className="btn-secondary" 
-          style={{ justifyContent: 'center', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'center', backgroundColor: 'white', border: '1px solid #e2e8f0' }}
+          style={{ width: '100%', justifyContent: 'center', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'center', backgroundColor: 'white', border: '1px solid #e2e8f0' }}
         >
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: '18px', height: '18px' }} />
           <span style={{ fontWeight: '500', color: '#475569' }}>Sign up with Google</span>
