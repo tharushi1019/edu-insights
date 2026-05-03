@@ -81,22 +81,22 @@ export default function SignupPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--background)', padding: '1rem' }}>
-      <div className="card" style={{ maxWidth: '450px', width: '100%', padding: '2.5rem' }}>
+      <div className="card" style={{ maxWidth: '450px', width: '100%', padding: 'clamp(1.5rem, 5vw, 2.5rem)' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <img 
             src="/logo.png" 
             alt="EduInsights Logo" 
             style={{ width: '64px', height: '64px', borderRadius: '16px', marginBottom: '1.5rem', boxShadow: '0 8px 16px rgba(0,0,0,0.1)' }}
           />
-          <h1 style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Create Account</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>Join EduInsights to transform your school analytics</p>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Create Account</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Join EduInsights to transform your school analytics</p>
         </div>
 
         <button 
           onClick={handleGoogleLogin}
           type="button" 
           className="btn-secondary" 
-          style={{ width: '100%', justifyContent: 'center', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'center', backgroundColor: 'white', border: '1px solid #e2e8f0' }}
+          style={{ justifyContent: 'center', marginBottom: '1.5rem', display: 'flex', gap: '12px', alignItems: 'center', backgroundColor: 'white', border: '1px solid #e2e8f0' }}
         >
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style={{ width: '18px', height: '18px' }} />
           <span style={{ fontWeight: '500', color: '#475569' }}>Sign up with Google</span>
@@ -183,7 +183,7 @@ export default function SignupPage() {
             type="submit" 
             className="btn-primary" 
             disabled={loading}
-            style={{ justifyContent: 'center', padding: '12px', marginTop: '0.5rem', opacity: loading ? 0.7 : 1 }}
+            style={{ padding: '12px', marginTop: '0.5rem', opacity: loading ? 0.7 : 1 }}
           >
             <UserPlus size={20} /> {loading ? 'Creating Account...' : 'Create Account'}
           </button>

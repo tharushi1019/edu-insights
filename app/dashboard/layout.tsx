@@ -89,13 +89,13 @@ export default function DashboardLayout({
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--background)', position: 'relative' }}>
+    <div className="main-container">
       {/* Mobile Header */}
       <header className="mobile-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}>
           <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px' }} />
           <h2 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>EduInsights</h2>
-        </div>
+        </Link>
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           style={{ background: 'none', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}
@@ -106,8 +106,8 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside className={`sidebar ${isMenuOpen ? 'mobile-open' : ''}`}>
-        <div style={{ padding: '0 0 2.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+        <div style={{ padding: '0 0 2rem' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', textDecoration: 'none' }}>
             <img 
               src="/logo.png" 
               alt="EduInsights Logo" 
@@ -117,7 +117,7 @@ export default function DashboardLayout({
             <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--primary)', letterSpacing: '-0.025em' }}>
               EduInsights
             </h2>
-          </div>
+          </Link>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '500', paddingLeft: '4px' }}>
             {t('portalTitle')}
           </p>
@@ -213,8 +213,6 @@ export default function DashboardLayout({
               fontWeight: '600',
               transition: 'all 0.2s'
             }}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--error-light)')}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
           >
             <LogOut size={20} /> 
             <span>{t('signOut')}</span>
@@ -223,7 +221,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '2.5rem 4rem', overflowY: 'auto' }}>
+      <main className="main-content">
         {children}
       </main>
 

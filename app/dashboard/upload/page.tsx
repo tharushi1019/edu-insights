@@ -162,12 +162,12 @@ export default function ExcelUpload() {
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '2.5rem' }}>
-        <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: '#1e293b' }}>Bulk Upload Exam Data</h1>
-        <p style={{ color: 'var(--text-muted)' }}>Upload an Excel (.xlsx) file to populate your dashboard automatically.</p>
+      <header style={{ marginBottom: '2rem' }}>
+        <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2rem)', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)' }}>Bulk Upload Exam Data</h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1rem' }}>Upload an Excel (.xlsx) file to populate your dashboard automatically.</p>
       </header>
 
-      <div style={{ display: 'grid', gap: '2rem' }}>
+      <div style={{ display: 'grid', gap: '1.5rem' }}>
         {status === 'idle' || status === 'processing' ? (
           <div 
             className="card" 
@@ -176,12 +176,13 @@ export default function ExcelUpload() {
             onDragOver={handleDrag}
             onDrop={handleDrop}
             style={{ 
-              padding: '4rem 2rem', 
+              padding: 'clamp(2rem, 10vw, 4rem) 1.5rem', 
               textAlign: 'center',
               border: `2px dashed ${dragActive ? 'var(--primary)' : 'var(--surface-border)'}`,
               transition: 'all 0.2s',
-              backgroundColor: dragActive ? '#f0f9ff' : 'white',
-              position: 'relative'
+              backgroundColor: dragActive ? 'rgba(37, 99, 235, 0.05)' : 'white',
+              position: 'relative',
+              cursor: 'pointer'
             }}
           >
             <input 
@@ -191,13 +192,13 @@ export default function ExcelUpload() {
               style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
             />
             <div style={{ marginBottom: '1.5rem' }}>
-              <FileUp size={48} color={dragActive ? 'var(--primary)' : 'var(--text-muted)'} />
+              <FileUp size={40} color={dragActive ? 'var(--primary)' : 'var(--text-muted)'} />
             </div>
-            <h3 style={{ marginBottom: '0.5rem', color: '#334155' }}>
-               Click to upload or drag and drop
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>
+               Tap to upload or drag & drop
             </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.94rem' }}>
-              Only .xlsx and .csv files are supported.
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+              Excel (.xlsx) or CSV files supported
             </p>
           </div>
         ) : status === 'success' ? (
@@ -242,13 +243,13 @@ export default function ExcelUpload() {
             zIndex: 1000, 
             backdropFilter: 'blur(8px)' 
         }}>
-            <div className="card scale-in" style={{ maxWidth: '400px', padding: '3rem', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
-                <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
-                    <Loader2 size={40} color="var(--primary)" className="animate-spin" />
+            <div className="card scale-in" style={{ maxWidth: '400px', width: '90%', padding: 'clamp(1.5rem, 8vw, 3rem)', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                    <Loader2 size={32} color="var(--primary)" className="animate-spin" />
                 </div>
-                <h2 style={{ fontSize: '2rem', fontWeight: '800', marginBottom: '1rem', color: 'var(--text-main)' }}>Processing Data...</h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '1rem', lineHeight: '1.7', fontSize: '1.1rem' }}>
-                    We are validating and saving your records to the database. Please do not close this window.
+                <h2 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)' }}>Processing Data...</h2>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: '1.6', fontSize: '1rem' }}>
+                    We are validating and saving your records. Please stay on this page.
                 </p>
                 <div style={{ 
                     width: '100%', 
@@ -268,15 +269,15 @@ export default function ExcelUpload() {
       )}
 
       {data.length > 0 && (
-            <div className="card fade-in">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                    <h3 style={{ color: '#334155' }}>Previewing Data</h3>
+            <div className="card fade-in" style={{ padding: 'clamp(1rem, 5vw, 1.5rem)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1.25rem', color: 'var(--text-main)' }}>Previewing Data</h3>
                     <button 
                         onClick={handleImport} 
                         disabled={status === 'importing'}
                         className="btn-primary"
                     >
-                        Confirm & Import to Database
+                        Import Records
                     </button>
                 </div>
                 <div style={{ overflowX: 'auto' }}>

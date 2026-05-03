@@ -409,18 +409,25 @@ export default function Dashboard() {
     });
 
     // Yearly Trend Chart
-    const trendImg = lineChartRef.current?.toBase64Image();
-    if (trendImg) {
+    const trendCanvas = lineChartRef.current?.canvas;
+    let tableStartY = 220;
+    if (trendCanvas) {
+        const trendImg = lineChartRef.current.toBase64Image('image/png', 1.0);
+        const props = doc.getImageProperties(trendImg);
+        const w = pageWidth - 30;
+        const h = (props.height * w) / props.width;
+
         doc.setTextColor(15, 23, 42);
         doc.setFontSize(12);
         doc.text("HISTORICAL PERFORMANCE TREND", 15, 110);
-        doc.addImage(trendImg, 'PNG', 15, 115, pageWidth - 30, 80);
+        doc.addImage(trendImg, 'PNG', 15, 115, w, h, undefined, 'FAST');
+        tableStartY = 115 + h + 15;
     }
 
     // Tabular Drill-down
-    doc.text("DETAILED SUBJECT ANALYSIS", 15, 215);
+    doc.text("DETAILED SUBJECT ANALYSIS", 15, tableStartY);
     autoTable(doc, {
-      startY: 220,
+      startY: tableStartY + 5,
       head: [['SUBJECT', 'SAT', 'PASSED', 'FAILED', 'SUCCESS RATE']],
       body: filteredRecords.map(r => [
           r.subjects?.name.toUpperCase(), r.total_students, r.pass_count, r.fail_count, `${Math.round((r.pass_count/r.total_students)*100)}%`
@@ -439,66 +446,89 @@ export default function Dashboard() {
     doc.setFontSize(14);
     doc.text("VISUAL COMPARATIVE ANALYTICS", 15, 16);
 
-    const barImg = barChartRef.current?.toBase64Image();
-    const donutImg = donutChartRef.current?.toBase64Image();
+    const barCanvas = barChartRef.current?.canvas;
+    let compY = 45;
+    if (barCanvas) {
+        const barImg = barChartRef.current.toBase64Image('image/png', 1.0);
+        const props = doc.getImageProperties(barImg);
+        const w = pageWidth - 30;
+        const h = (props.height * w) / props.width;
 
-    if (barImg) {
         doc.setTextColor(15, 23, 42);
         doc.setFontSize(11);
         doc.text("SUBJECT PERFORMANCE COMPARISON", 15, 40);
-        doc.addImage(barImg, 'PNG', 15, 45, pageWidth - 30, 90);
+        doc.addImage(barImg, 'PNG', 15, compY, w, h, undefined, 'FAST');
+        compY = compY + h + 20; // 20mm gap
     }
 
-    if (donutImg) {
-        doc.text("OVERALL PASS/FAIL DISTRIBUTION", 15, 145);
-        doc.addImage(donutImg, 'PNG', pageWidth/2 - 35, 148, 70, 70);
+    const donutCanvas = donutChartRef.current?.canvas;
+    if (donutCanvas) {
+        const donutImg = donutChartRef.current.toBase64Image('image/png', 1.0);
+        const props = doc.getImageProperties(donutImg);
+        const w = 65; // Slightly smaller to ensure fit
+        const h = (props.height * w) / props.width;
+        
+        // Ensure donut doesn't start too low
+        if (compY > 180) {
+            doc.addPage();
+            compY = 30;
+        }
+
+        doc.setTextColor(15, 23, 42);
+        doc.setFontSize(11);
+        doc.text("OVERALL PASS/FAIL DISTRIBUTION", 15, compY);
+        doc.addImage(donutImg, 'PNG', pageWidth/2 - w/2, compY + 5, w, h, undefined, 'FAST');
+        
         // Add text in middle of donut
         doc.setFontSize(20);
-        doc.text(`${passRate}%`, pageWidth/2, 183, { align: 'center' });
+        doc.text(`${passRate}%`, pageWidth/2, compY + 5 + (h/2) + 2, { align: 'center' });
         doc.setFontSize(7);
-        doc.text("SUCCESS", pageWidth/2, 189, { align: 'center' });
+        doc.text("SUCCESS", pageWidth/2, compY + 5 + (h/2) + 8, { align: 'center' });
     }
 
-    // Signature Area (Formal Institutional Box)
-    const sigY = 225;
+    // --- 4. VERIFICATION PAGE ---
+    doc.addPage();
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, pageWidth, 25, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.text("OFFICIAL RECORD VERIFICATION", 15, 16);
+
+    const sigY = 60;
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(15, sigY, pageWidth - 30, 40, 2, 2, 'F');
+    doc.roundedRect(15, sigY, pageWidth - 30, 80, 2, 2, 'F');
     doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(15, sigY, pageWidth - 30, 40, 2, 2, 'D');
+    doc.roundedRect(15, sigY, pageWidth - 30, 80, 2, 2, 'D');
 
     doc.setTextColor(15, 23, 42);
-    doc.setFontSize(9);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("OFFICIAL INSTITUTIONAL CERTIFICATION", pageWidth/2, sigY + 7, { align: 'center' });
+    doc.text("INSTITUTIONAL DATA CERTIFICATION", pageWidth/2, sigY + 12, { align: 'center' });
     
     doc.setDrawColor(15, 23, 42);
     doc.setLineWidth(0.4);
     
     // Left: Principal
-    doc.line(25, sigY + 28, 80, sigY + 28);
-    doc.setFontSize(7);
-    doc.text("PRINCIPAL / SECTIONAL HEAD", 52.5, sigY + 32, { align: 'center' });
+    doc.line(30, sigY + 55, 85, sigY + 55);
+    doc.setFontSize(9);
+    doc.text("PRINCIPAL / SECTIONAL HEAD", 57.5, sigY + 62, { align: 'center' });
     doc.setFont("helvetica", "normal");
-    doc.text("Signature & Designation", 52.5, sigY + 36, { align: 'center' });
+    doc.setFontSize(8);
+    doc.text("Signature & Official Designation", 57.5, sigY + 68, { align: 'center' });
     
     // Right: Seal
-    doc.line(pageWidth - 80, sigY + 28, pageWidth - 25, sigY + 28);
+    doc.line(pageWidth - 85, sigY + 55, pageWidth - 30, sigY + 55);
     doc.setFont("helvetica", "bold");
-    doc.text("OFFICIAL SCHOOL SEAL & DATE", pageWidth - 52.5, sigY + 32, { align: 'center' });
+    doc.setFontSize(9);
+    doc.text("OFFICIAL SCHOOL SEAL", pageWidth - 57.5, sigY + 62, { align: 'center' });
     doc.setFont("helvetica", "normal");
-    doc.text("Institutional Authentication", pageWidth - 52.5, sigY + 36, { align: 'center' });
+    doc.setFontSize(8);
+    doc.text("Date & Stamp Area", pageWidth - 57.5, sigY + 68, { align: 'center' });
 
-    // Authenticity Badge Placeholder
-    doc.setDrawColor(16, 185, 129);
-    doc.circle(pageWidth/2, sigY + 25, 6, 'D');
-    doc.setFontSize(4);
-    doc.setTextColor(16, 185, 129);
-    doc.text("VERIFIED", pageWidth/2, sigY + 26, { align: 'center' });
-
-    // Disclaimer
-    doc.setFontSize(6);
-    doc.setTextColor(100, 116, 139);
-    doc.text("This analytical report is an official document generated by EduInsights Pro. Any unauthorized alteration renders this document invalid.", pageWidth/2, sigY + 46, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text(`This academic report was generated on ${new Date().toLocaleString()}`, 15, sigY + 100);
+    doc.text(`Data Source: ${schoolName} Exam Records Management System`, 15, sigY + 108);
+    doc.text("Validated for academic period based on user-selected criteria.", 15, sigY + 116);
 
     // Global Footer
     const totalPages = (doc as any).internal.getNumberOfPages();
@@ -593,41 +623,34 @@ export default function Dashboard() {
   return (
     <div className="fade-in">
       {/* HEADER & BRANDING */}
-      <header style={{ marginBottom: '3.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
+      <header style={{ marginBottom: '2.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--primary)', marginBottom: '0.75rem' }}>
-                <TrendingUp size={24} />
-                <span style={{ fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.15em' }}>EduInsights Pro Analytics</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--primary)', marginBottom: '0.5rem' }}>
+                <TrendingUp size={20} />
+                <span style={{ fontWeight: '700', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>EduInsights Pro Analytics</span>
             </div>
-            <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.03em' }}>
+            <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.03em' }}>
               Academic Performance
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', maxWidth: '600px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px' }}>
               Strategic insights for <b style={{ color: 'var(--primary)' }}>{schoolName}</b>
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-              <button onClick={handleExportPDF} className="btn-secondary" style={{ height: '52px' }}>
-                  <Printer size={20} /> Report
+          <div style={{ display: 'flex', gap: '0.75rem', width: '100%', maxWidth: '400px' }}>
+              <button onClick={handleExportPDF} className="btn-secondary" style={{ flex: 1 }}>
+                  <Printer size={18} /> Report
               </button>
-              <Link href="/dashboard/add" className="btn-primary" style={{ height: '52px' }}>
-                  <PlusCircle size={22} /> New Record
+              <Link href="/dashboard/add" className="btn-primary" style={{ flex: 1 }}>
+                  <PlusCircle size={20} /> New Record
               </Link>
           </div>
         </div>
 
         {/* 1. COMMAND FILTERS (STICKY) */}
-        <div className="sticky-command-bar" style={{ 
-            display: 'flex', 
-            gap: '1.5rem',
-            padding: '20px',
-            borderRadius: '16px',
-            marginBottom: '2.5rem',
-            alignItems: 'center',
-        }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Academic Year</label>
+        <div className="sticky-command-bar">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Academic Year</label>
                 <select 
                     value={selectedYear || ''} 
                     onChange={(e) => setSelectedYear(Number(e.target.value))}
@@ -638,9 +661,8 @@ export default function Dashboard() {
                     ))}
                 </select>
             </div>
-            <div style={{ width: '1px', height: '30px', backgroundColor: 'var(--surface-border)' }}></div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Filter Subject</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Filter Subject</label>
                 <select 
                     value={selectedSubject} 
                     onChange={(e) => setSelectedSubject(e.target.value)}
@@ -655,66 +677,61 @@ export default function Dashboard() {
         </div>
 
         {/* 2. TOP SUMMARY CARDS */}
-        <div className="stats-grid" style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
-          gap: '1.5rem',
-          marginBottom: '1rem'
-        }}>
+        <div className="stats-grid" style={{ marginTop: '2rem' }}>
           <div className="card" style={{ borderLeft: '4px solid var(--primary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.9rem' }}>Total Students Sat</span>
-              <div style={{ padding: '8px', borderRadius: '10px', backgroundColor: 'var(--primary-light)' }}>
-                <Users size={20} color="var(--primary)" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Total Students Sat</span>
+              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--primary-light)' }}>
+                <Users size={18} color="var(--primary)" />
               </div>
             </div>
-            <div style={{ fontSize: '2.25rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.totalStudents.toLocaleString()}</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.totalStudents.toLocaleString()}</div>
           </div>
 
           <div className="card" style={{ borderLeft: '4px solid var(--success)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.9rem' }}>Total Passed</span>
-              <div style={{ padding: '8px', borderRadius: '10px', backgroundColor: 'var(--success-light)' }}>
-                <Award size={20} color="var(--success)" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Total Passed</span>
+              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--success-light)' }}>
+                <Award size={18} color="var(--success)" />
               </div>
             </div>
-            <div style={{ fontSize: '2.25rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.passCount.toLocaleString()}</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.passCount.toLocaleString()}</div>
           </div>
 
           <div className="card" style={{ borderLeft: '4px solid var(--error)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.9rem' }}>Total Failed</span>
-              <div style={{ padding: '8px', borderRadius: '10px', backgroundColor: 'var(--error-light)' }}>
-                <MinusCircle size={20} color="var(--error)" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Total Failed</span>
+              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--error-light)' }}>
+                <MinusCircle size={18} color="var(--error)" />
               </div>
             </div>
-            <div style={{ fontSize: '2.25rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.failCount.toLocaleString()}</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.failCount.toLocaleString()}</div>
           </div>
 
           <div className="card" style={{ borderLeft: '4px solid var(--accent)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.9rem' }}>Overall Pass Rate</span>
-              <div style={{ padding: '8px', borderRadius: '10px', backgroundColor: 'var(--warning-light)' }}>
-                <TrendingUp size={20} color="var(--accent)" />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Overall Pass Rate</span>
+              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--warning-light)' }}>
+                <TrendingUp size={18} color="var(--accent)" />
               </div>
             </div>
-            <div style={{ fontSize: '2.25rem', fontWeight: '800', color: 'var(--text-main)' }}>{passRate}%</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{passRate}%</div>
           </div>
         </div>
       </header>
 
       {/* 3. YEARLY PERFORMANCE TREND (Full Width Line Chart) */}
       <section id="charts-start" className="card" style={{ marginBottom: '2.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
-                  <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>Yearly Performance Trend</h3>
-                  <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)' }}>Historical success vs failure analysis (2022 - 2026)</p>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>Yearly Performance Trend</h3>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Historical success vs failure analysis</p>
               </div>
-              <button onClick={() => downloadChart(lineChartRef, 'Historical-Trend')} className="btn-secondary" style={{ padding: '8px' }}>
-                  <ImageIcon size={20} />
+              <button onClick={() => downloadChart(lineChartRef, 'Historical-Trend')} className="btn-secondary" style={{ padding: '8px', width: 'auto' }}>
+                  <ImageIcon size={18} />
               </button>
           </div>
-          <div style={{ height: '400px' }}>
+          <div style={{ height: '300px' }}>
               <Line 
                 ref={lineChartRef}
                 data={chartData.trendLine} 
@@ -722,12 +739,12 @@ export default function Dashboard() {
                   responsive: true,
                   maintainAspectRatio: false,
                   plugins: {
-                    legend: { position: 'top', labels: { usePointStyle: true, font: { weight: 600 } } },
-                    tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 15 }
+                    legend: { position: 'top', labels: { usePointStyle: true, font: { weight: 600, size: 10 } } },
+                    tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12 }
                   },
                   scales: {
-                    y: { min: 0, max: 100, title: { display: true, text: 'Percentage (%)' } },
-                    x: { grid: { display: false } }
+                    y: { min: 0, max: 100, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
                   }
                 }}
               />
@@ -735,16 +752,16 @@ export default function Dashboard() {
       </section>
 
       {/* 4. SUBJECT-WISE & DISTRIBUTION GRID */}
-      <div className="dashboard-grid-main" style={{ display: 'grid', gridTemplateColumns: '3fr 2fr', gap: '2rem', marginBottom: '3.5rem' }}>
+      <div className="dashboard-grid" style={{ marginBottom: '2.5rem' }}>
           {/* Subject-wise Bar Chart */}
           <div className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)' }}>Subject Performance</h3>
-                  <button onClick={() => downloadChart(barChartRef, 'Subject-Comparison')} className="btn-secondary" style={{ padding: '8px' }}>
-                      <ImageIcon size={20} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>Subject Performance</h3>
+                  <button onClick={() => downloadChart(barChartRef, 'Subject-Comparison')} className="btn-secondary" style={{ padding: '8px', width: 'auto' }}>
+                      <ImageIcon size={18} />
                   </button>
               </div>
-              <div style={{ height: '350px' }}>
+              <div style={{ height: '300px' }}>
                   <Bar 
                     ref={barChartRef}
                     data={chartData.subjectBar}
@@ -753,8 +770,8 @@ export default function Dashboard() {
                       maintainAspectRatio: false,
                       plugins: { legend: { display: false } },
                       scales: {
-                        x: { grid: { display: false } },
-                        y: { beginAtZero: true }
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { beginAtZero: true, ticks: { font: { size: 10 } } }
                       }
                     }}
                   />
@@ -763,26 +780,26 @@ export default function Dashboard() {
 
           {/* Pass vs Fail Distribution */}
           <div className="card">
-              <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '2rem' }}>Overall Distribution</h3>
-              <div style={{ height: '300px', position: 'relative' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Overall Distribution</h3>
+              <div style={{ height: '250px', position: 'relative' }}>
                   <Doughnut 
                     ref={donutChartRef}
                     data={chartData.overallDonut}
                     options={{
                       responsive: true,
                       maintainAspectRatio: false,
-                      plugins: { legend: { position: 'bottom' } }
+                      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
                     }}
                   />
                   <div style={{ 
                       position: 'absolute', 
-                      top: '45%', 
+                      top: '42%', 
                       left: '50%', 
                       transform: 'translate(-50%, -50%)',
                       textAlign: 'center'
                   }}>
-                      <div style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--text-main)' }}>{passRate}%</div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Success</div>
+                      <div style={{ fontSize: '1.75rem', fontWeight: '900', color: 'var(--text-main)' }}>{passRate}%</div>
+                      <div style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Success</div>
                   </div>
               </div>
           </div>
@@ -790,59 +807,79 @@ export default function Dashboard() {
 
       {/* 5. DATA TABLE */}
       <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>Tabular Data Summary</h3>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Detailed drill-down for {selectedYear} / {selectedSubject}</p>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>Tabular Data Summary</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Detailed drill-down for {selectedYear}</p>
               </div>
-              <button onClick={handleExportExcel} className="btn-secondary">
+              <button onClick={handleExportExcel} className="btn-secondary" style={{ width: 'auto' }}>
                   <Download size={18} /> Export Excel
               </button>
           </div>
-          <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead>
-                      <tr style={{ borderBottom: '2px solid var(--surface-border)', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                          <th style={{ padding: '16px', fontWeight: '700', textTransform: 'uppercase' }}>Subject</th>
-                          <th style={{ padding: '16px', fontWeight: '700', textTransform: 'uppercase' }}>Total Sat</th>
-                          <th style={{ padding: '16px', fontWeight: '700', textTransform: 'uppercase' }}>Passed</th>
-                          <th style={{ padding: '16px', fontWeight: '700', textTransform: 'uppercase' }}>Failed</th>
-                          <th style={{ padding: '16px', fontWeight: '700', textTransform: 'uppercase' }}>Success Rate</th>
-                          <th style={{ padding: '16px', fontWeight: '700', textTransform: 'uppercase' }}>Actions</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      {filteredRecords.map((item, i) => {
-                          const isEditing = editingId === item.id;
-                          const totalVal = isEditing ? (parseInt(editValues.totalSat) || 0) : item.total_students;
-                          const passVal = isEditing ? (parseInt(editValues.passCount) || 0) : item.pass_count;
-                          const failVal = totalVal - passVal;
-                          const rate = totalVal > 0 ? Math.round((passVal / totalVal) * 100) : 0;
-                          
-                          return (
-                              <tr key={i} style={{ borderBottom: '1px solid var(--surface-border)' }}>
-                                  <td style={{ padding: '16px', fontWeight: '700' }}>{item.subjects?.name}</td>
-                                  <td style={{ padding: '16px' }}>{isEditing ? <input value={editValues.totalSat} onChange={(e) => setEditValues({...editValues, totalSat: e.target.value})} style={{ width: '70px' }} /> : item.total_students}</td>
-                                  <td style={{ padding: '16px', color: 'var(--success)', fontWeight: '700' }}>{isEditing ? <input value={editValues.passCount} onChange={(e) => setEditValues({...editValues, passCount: e.target.value})} style={{ width: '70px' }} /> : item.pass_count}</td>
-                                  <td style={{ padding: '16px', color: 'var(--error)' }}>{failVal}</td>
-                                  <td style={{ padding: '16px' }}>
-                                      <span style={{ fontWeight: '800', color: rate >= 75 ? 'var(--success)' : rate >= 40 ? 'var(--warning)' : 'var(--error)' }}>{rate}%</span>
-                                  </td>
-                                  <td style={{ padding: '16px' }}>
-                                      {isEditing ? (
-                                          <button onClick={() => handleSaveEdit(item.id)} className="btn-primary" style={{ padding: '4px 10px' }}>Save</button>
-                                      ) : (
-                                          <button onClick={() => handleStartEdit(item)} className="btn-secondary" style={{ padding: '4px 10px' }}>Edit</button>
-                                      )}
-                                  </td>
-                              </tr>
-                          );
-                      })}
-                  </tbody>
-              </table>
+          
+          <div className="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Subject</th>
+                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Sat</th>
+                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Passed</th>
+                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Failed</th>
+                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Success %</th>
+                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredRecords.map(record => (
+                        <tr key={record.id}>
+                            <td style={{ fontWeight: '700', color: 'var(--text-main)' }}>{record.subjects?.name}</td>
+                            <td>
+                                {editingId === record.id ? (
+                                    <input 
+                                        type="number" 
+                                        value={editValues.totalSat}
+                                        onChange={(e) => setEditValues({...editValues, totalSat: e.target.value})}
+                                        style={{ width: '60px', padding: '4px', borderRadius: '4px', border: '1px solid var(--surface-border)' }}
+                                    />
+                                ) : record.total_students}
+                            </td>
+                            <td>
+                                {editingId === record.id ? (
+                                    <input 
+                                        type="number" 
+                                        value={editValues.passCount}
+                                        onChange={(e) => setEditValues({...editValues, passCount: e.target.value})}
+                                        style={{ width: '60px', padding: '4px', borderRadius: '4px', border: '1px solid var(--surface-border)' }}
+                                    />
+                                ) : record.pass_count}
+                            </td>
+                            <td style={{ color: 'var(--error)', fontWeight: '600' }}>{record.fail_count}</td>
+                            <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ flex: 1, height: '6px', backgroundColor: 'var(--primary-light)', borderRadius: '3px', width: '60px' }}>
+                                        <div style={{ 
+                                            width: `${Math.round((record.pass_count/record.total_students)*100)}%`, 
+                                            height: '100%', 
+                                            backgroundColor: (record.pass_count/record.total_students) > 0.5 ? 'var(--success)' : 'var(--error)',
+                                            borderRadius: '3px'
+                                        }}></div>
+                                    </div>
+                                    <span style={{ fontWeight: '700', fontSize: '0.85rem' }}>{Math.round((record.pass_count/record.total_students)*100)}%</span>
+                                </div>
+                            </td>
+                            <td>
+                                {editingId === record.id ? (
+                                    <button onClick={() => handleSaveEdit(record.id)} className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.75rem', width: 'auto' }}>Save</button>
+                                ) : (
+                                    <button onClick={() => handleStartEdit(record)} className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem', width: 'auto' }}>Edit</button>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
           </div>
       </div>
     </div>
   );
 }
-

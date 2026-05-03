@@ -118,16 +118,16 @@ export default function AddRecord() {
         <ChevronLeft size={16} /> Back to Dashboard
       </Link>
 
-      <header style={{ marginBottom: '2.5rem' }}>
-        <span style={{ fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.15em' }}>{t('addRecord')}</span>
-        <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.03em' }}>{t('addNewRecord')}</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', maxWidth: '800px', lineHeight: '1.6' }}>{t('addSubtitle')}</p>
+      <header style={{ marginBottom: '2rem' }}>
+        <span style={{ fontWeight: '700', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--primary)' }}>{t('addRecord')}</span>
+        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.03em' }}>{t('addNewRecord')}</h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '800px', lineHeight: '1.5' }}>{t('addSubtitle')}</p>
       </header>
 
       <div className="card" style={{ padding: '2.5rem' }}>
         <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '1.5rem' }}>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
             <div>
                 <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem', color: '#475569' }}>Exam Year (වර්ෂය)</label>
                 <input 
@@ -140,7 +140,7 @@ export default function AddRecord() {
                 />
             </div>
             <div>
-                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem', color: '#475569' }}>Total Students who sat (පෙනී සිටි සිසුන්)</label>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem', color: '#475569' }}>Total Students (පෙනී සිටි සිසුන්)</label>
                 <input 
                     type="number" 
                     name="totalSat"
@@ -247,7 +247,7 @@ export default function AddRecord() {
 
                 <div>
                     <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.4rem', color: '#64748b' }}>Passed Count (සමත්වූ සංඛ්‍යාව)</label>
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         <input 
                             type="number" 
                             name="passCount"
@@ -255,9 +255,9 @@ export default function AddRecord() {
                             onChange={handleChange}
                             placeholder="0"
                             required
-                            style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid var(--surface-border)', outline: 'none' }}
+                            style={{ flex: '1 1 200px', padding: '12px', borderRadius: '8px', border: '1px solid var(--surface-border)', outline: 'none' }}
                         />
-                        <div style={{ padding: '12px 16px', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '8px', fontWeight: 'bold' }}>
+                        <div style={{ flex: '0 0 auto', padding: '12px 16px', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '8px', fontWeight: 'bold' }}>
                             {passRate}% Pass Rate
                         </div>
                     </div>
@@ -281,7 +281,7 @@ export default function AddRecord() {
             type="submit" 
             className="btn-primary" 
             disabled={status === 'loading'}
-            style={{ marginTop: '0.5rem', justifyContent: 'center', opacity: status === 'loading' ? 0.7 : 1 }}
+            style={{ marginTop: '0.5rem', opacity: status === 'loading' ? 0.7 : 1 }}
           >
             {status === 'loading' ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
             {t('saveRecord')}

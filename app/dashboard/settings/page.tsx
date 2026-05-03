@@ -130,24 +130,24 @@ export default function SettingsPage() {
 
   return (
     <div className="fade-in" style={{ maxWidth: '800px' }}>
-      <header style={{ marginBottom: '3rem' }}>
+      <header style={{ marginBottom: '2.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--primary)', marginBottom: '0.75rem' }}>
-            <Settings size={24} />
-            <span style={{ fontWeight: '700', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.15em' }}>System Settings</span>
+            <Settings size={20} />
+            <span style={{ fontWeight: '700', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>System Settings</span>
         </div>
-        <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.03em' }}>{t('settings')}</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', lineHeight: '1.6' }}>
+        <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.03em' }}>{t('settings')}</h1>
+        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.5' }}>
             {t('settingsSubtitle')}
         </p>
       </header>
 
       {/* INSTITUTION SETTINGS */}
-      <section className="card" style={{ padding: '2.5rem', marginBottom: '2.5rem' }}>
+      <section className="card" style={{ padding: 'clamp(1.5rem, 5vw, 2.5rem)', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
             <div style={{ padding: '10px', borderRadius: '12px', backgroundColor: 'var(--primary-light)' }}>
-                <Building2 size={22} color="var(--primary)" />
+                <Building2 size={20} color="var(--primary)" />
             </div>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)' }}>{t('institutionBrandingTitle')}</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)' }}>{t('institutionBrandingTitle')}</h3>
         </div>
 
         <div style={{ marginBottom: '2rem' }}>
@@ -180,7 +180,7 @@ export default function SettingsPage() {
             onClick={handleUpdateProfile} 
             disabled={saving}
             className="btn-primary" 
-            style={{ padding: '14px 32px', fontSize: '1rem' }}
+            style={{ fontSize: '1rem' }}
         >
             {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
             {t('saveChanges')}
@@ -188,12 +188,12 @@ export default function SettingsPage() {
       </section>
 
       {/* ACCOUNT & SECURITY */}
-      <section className="card" style={{ padding: '2.5rem', marginBottom: '2.5rem' }}>
+      <section className="card" style={{ padding: 'clamp(1.5rem, 5vw, 2.5rem)', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2rem' }}>
             <div style={{ padding: '10px', borderRadius: '12px', backgroundColor: 'var(--success-light)' }}>
-                <Shield size={22} color="var(--success)" />
+                <Shield size={20} color="var(--success)" />
             </div>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)' }}>{t('accountSecurity')}</h3>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)' }}>{t('accountSecurity')}</h3>
         </div>
 
         <div style={{ marginBottom: '2rem' }}>
@@ -214,21 +214,21 @@ export default function SettingsPage() {
 
         <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
-            gap: '1.5rem',
-            marginTop: '3rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+            gap: '2rem',
+            marginTop: '2rem',
             paddingTop: '2rem',
             borderTop: '1px solid var(--surface-border)'
         }}>
             <div>
                 <h4 style={{ fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.5rem' }}>Reset Analytics</h4>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                    Permanently delete all exam records. Your account and school branding will remain.
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+                    Permanently delete all exam records. Your school branding will remain.
                 </p>
                 <button 
                     onClick={() => setShowResetConfirm(true)}
                     className="btn-secondary" 
-                    style={{ color: 'var(--warning)', borderColor: 'var(--warning-light)', backgroundColor: 'var(--warning-light)' }}
+                    style={{ color: 'var(--warning)', borderColor: 'var(--warning-light)', backgroundColor: 'var(--warning-light)', width: '100%' }}
                 >
                     <RotateCcw size={18} /> {t('resetAnalytics')}
                 </button>
@@ -236,13 +236,13 @@ export default function SettingsPage() {
 
             <div>
                 <h4 style={{ fontWeight: '800', color: 'var(--error)', marginBottom: '0.5rem' }}>Delete Account</h4>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-                    Permanently remove your account and all associated data. This action cannot be undone.
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+                    Permanently remove your account and all data. This cannot be undone.
                 </p>
                 <button 
                     onClick={() => setShowDeleteConfirm(true)}
                     className="btn-secondary" 
-                    style={{ color: 'var(--error)', borderColor: 'var(--error-light)', backgroundColor: 'var(--error-light)' }}
+                    style={{ color: 'var(--error)', borderColor: 'var(--error-light)', backgroundColor: 'var(--error-light)', width: '100%' }}
                 >
                     <UserX size={18} /> {t('deleteAccount')}
                 </button>
@@ -252,8 +252,8 @@ export default function SettingsPage() {
 
       {/* CONFIRMATION MODALS */}
       {showResetConfirm && (
-        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-            <div className="card scale-in" style={{ maxWidth: '450px', padding: '2.5rem', textAlign: 'center' }}>
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem', backdropFilter: 'blur(4px)' }}>
+            <div className="card scale-in" style={{ maxWidth: '450px', width: '100%', padding: 'clamp(1.5rem, 8vw, 2.5rem)', textAlign: 'center' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'var(--warning-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                     <AlertTriangle size={32} color="var(--warning)" />
                 </div>
@@ -261,27 +261,27 @@ export default function SettingsPage() {
                 <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: '1.6' }}>
                     Are you sure you want to delete all exam records? This will clear your entire dashboard.
                 </p>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button onClick={() => setShowResetConfirm(false)} className="btn-secondary" style={{ flex: 1 }}>Cancel</button>
-                    <button onClick={handleResetData} className="btn-primary" style={{ flex: 1, backgroundColor: 'var(--warning)', border: 'none' }}>Yes, Reset Data</button>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <button onClick={() => setShowResetConfirm(false)} className="btn-secondary" style={{ flex: '1 1 120px' }}>Cancel</button>
+                    <button onClick={handleResetData} className="btn-primary" style={{ flex: '1 1 120px', backgroundColor: 'var(--warning)', border: 'none' }}>Yes, Reset</button>
                 </div>
             </div>
         </div>
       )}
 
       {showDeleteConfirm && (
-        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
-            <div className="card scale-in" style={{ maxWidth: '450px', padding: '2.5rem', textAlign: 'center' }}>
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem', backdropFilter: 'blur(4px)' }}>
+            <div className="card scale-in" style={{ maxWidth: '450px', width: '100%', padding: 'clamp(1.5rem, 8vw, 2.5rem)', textAlign: 'center' }}>
                 <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'var(--error-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                     <Trash2 size={32} color="var(--error)" />
                 </div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '1rem', color: 'var(--error)' }}>Delete Account?</h3>
                 <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: '1.6' }}>
-                    This will permanently delete your account and all records. You will be logged out and cannot recover this data.
+                    This will permanently delete your account and all records. This cannot be undone.
                 </p>
-                <div style={{ display: 'flex', gap: '1rem' }}>
-                    <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary" style={{ flex: 1 }}>Cancel</button>
-                    <button onClick={handleDeleteAccount} className="btn-primary" style={{ flex: 1, backgroundColor: 'var(--error)', border: 'none' }}>Delete Forever</button>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <button onClick={() => setShowDeleteConfirm(false)} className="btn-secondary" style={{ flex: '1 1 120px' }}>Cancel</button>
+                    <button onClick={handleDeleteAccount} className="btn-primary" style={{ flex: '1 1 120px', backgroundColor: 'var(--error)', border: 'none' }}>Delete Forever</button>
                 </div>
             </div>
         </div>
