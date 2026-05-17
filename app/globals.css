@@ -155,6 +155,25 @@ a {
   z-index: 1200;
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
+
+/* Custom premium scrollbar for sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-hover);
 }
 
 .sidebar.mobile-open {
