@@ -852,7 +852,7 @@ export default function ReportsPage() {
                 </thead>
                 <tbody>
                   {zonalData.map((row, idx) => (
-                    <tr key={idx} style={{ borderBottom: '1px solid var(--surface-border)', hover: { backgroundColor: '#f8fafc' } }}>
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--surface-border)' }}>
                       <td style={{ padding: '14px 12px', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-main)' }}>
                         {row.subjectName}
                       </td>

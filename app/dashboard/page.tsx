@@ -72,6 +72,8 @@ export default function Dashboard() {
       alTrend: { labels: [], datasets: [] },
       olTrend: { labels: [], datasets: [] },
       scholarshipTrend: { labels: [], datasets: [] },
+      activeTrend: { labels: [], datasets: [] },
+      scholarshipMetrics: { labels: [], datasets: [] },
       marksTrend: { labels: [], datasets: [] },
       olLatest: { labels: [], datasets: [] },
       alLatest: { labels: [], datasets: [] },
