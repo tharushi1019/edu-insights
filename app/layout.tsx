@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/logo.png',
   },
+  manifest: '/manifest.json',
 };
 
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -24,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body className={outfit.className}>
+      <body className={outfit.className} suppressHydrationWarning>
         <LanguageProvider>
           {children}
         </LanguageProvider>

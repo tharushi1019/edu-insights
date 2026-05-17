@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, PlusCircle, FileUp, BarChart3, Settings, LogOut, GraduationCap, TrendingUp, Building2, Languages, Menu, X } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, FileUp, BarChart3, Settings, LogOut, GraduationCap, TrendingUp, Building2, Languages, Menu, X, Users, BookOpen } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -132,15 +132,25 @@ export default function DashboardLayout({
             <TrendingUp size={20} /> 
             <span>{t('trends')}</span>
           </Link>
-          <Link href="/dashboard/add" className={`nav-link ${pathname === '/dashboard/add' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
-            <PlusCircle size={20} /> 
-            <span>{t('addRecord')}</span>
+          <Link href="/dashboard/scholarship" className={`nav-link ${pathname === '/dashboard/scholarship' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+            <GraduationCap size={20} /> 
+            <span>{t('scholarship')}</span>
           </Link>
+          <Link href="/dashboard/al" className={`nav-link ${pathname === '/dashboard/al' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+            <GraduationCap size={20} /> 
+            <span>G.C.E. A/L</span>
+          </Link>
+          <Link href="/dashboard/ol" className={`nav-link ${pathname === '/dashboard/ol' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+            <GraduationCap size={20} /> <span>G.C.E. O/L</span>
+          </Link>
+          <Link href="/dashboard/term-tests" className={`nav-link ${pathname === '/dashboard/term-tests' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+            <BarChart3 size={20} /> <span>Term Tests</span>
+          </Link>
+          <Link href="/dashboard/admin/students" className={`nav-link ${pathname === '/dashboard/admin/students' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+            <Users size={20} /> <span>Students</span>
+          </Link>
+
           <hr style={{ border: 'none', borderTop: '1px solid var(--surface-border)', margin: '0.5rem 0' }} />
-          <Link href="/dashboard/upload" className={`nav-link ${pathname === '/dashboard/upload' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
-            <FileUp size={20} /> 
-            <span>{t('excelUpload')}</span>
-          </Link>
 
           <Link href="/dashboard/settings" className={`nav-link ${pathname === '/dashboard/settings' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
             <Settings size={20} /> 
@@ -199,19 +209,14 @@ export default function DashboardLayout({
         <div style={{ paddingTop: '0.5rem' }}>
           <button 
             onClick={handleSignOut}
+            className="nav-link"
             style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '12px', 
-              padding: '12px 16px', 
-              borderRadius: '12px', 
-              width: '100%', 
-              background: 'none', 
-              border: 'none', 
               color: 'var(--error)', 
-              cursor: 'pointer',
-              fontWeight: '600',
-              transition: 'all 0.2s'
+              width: '100%', 
+              justifyContent: 'flex-start',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer'
             }}
           >
             <LogOut size={20} /> 

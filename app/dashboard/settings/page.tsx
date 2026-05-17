@@ -88,17 +88,43 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
+      // 1. Delete G.C.E. O/L and A/L performance records
+      const { error: examError } = await supabase
         .from('exam_records')
         .delete()
         .eq('user_id', user.id);
+      if (examError) throw examError;
 
-      if (error) throw error;
-      alert('All exam records have been reset.');
+      // 2. Fetch all student IDs belonging to this user
+      const { data: userStudents, error: fetchStudError } = await supabase
+        .from('students')
+        .select('id')
+        .eq('user_id', user.id);
+      if (fetchStudError) throw fetchStudError;
+
+      if (userStudents && userStudents.length > 0) {
+        const studentIds = userStudents.map(s => s.id);
+        
+        // 3. Delete student term test marks
+        const { error: marksError } = await supabase
+          .from('student_marks')
+          .delete()
+          .in('student_id', studentIds);
+        if (marksError) throw marksError;
+      }
+
+      // 4. Delete students themselves
+      const { error: studentsError } = await supabase
+        .from('students')
+        .delete()
+        .eq('user_id', user.id);
+      if (studentsError) throw studentsError;
+
+      alert('All exam records, student profiles, and term test marks have been successfully reset.');
       setShowResetConfirm(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error resetting data:', err);
-      alert('Failed to reset data.');
+      alert(`Failed to reset data: ${err.message || err}`);
     }
   };
 
@@ -107,13 +133,28 @@ export default function SettingsPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1. Delete records
+      // 1. Delete historical G.C.E. O/L and A/L exam records
       await supabase.from('exam_records').delete().eq('user_id', user.id);
       
-      // 2. Delete profile
+      // 2. Fetch student IDs for this user
+      const { data: userStudents } = await supabase
+        .from('students')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (userStudents && userStudents.length > 0) {
+        const studentIds = userStudents.map(s => s.id);
+        // 3. Delete student term test marks
+        await supabase.from('student_marks').delete().in('student_id', studentIds);
+      }
+
+      // 4. Delete students themselves
+      await supabase.from('students').delete().eq('user_id', user.id);
+
+      // 5. Delete profile
       await supabase.from('profiles').delete().eq('id', user.id);
 
-      // 3. Sign out (Deleting the actual Auth user usually requires admin API or RPC)
+      // 6. Sign out (Deleting the actual Auth user usually requires admin API or RPC)
       await supabase.auth.signOut();
       router.push('/login');
     } catch (err) {
