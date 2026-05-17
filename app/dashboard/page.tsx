@@ -48,9 +48,12 @@ export default function Dashboard() {
   // State
   const [loading, setLoading] = useState(true);
   const [records, setRecords] = useState<any[]>([]);
+  const [marksRecords, setMarksRecords] = useState<any[]>([]);
   const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string>('All Subjects');
+  const [selectedExam, setSelectedExam] = useState<'OL' | 'AL' | 'Scholarship'>('OL');
+  const latestYear = records.length > 0 ? Math.max(...records.map(r => r.year)) : null;
 
   // Report Configuration
   const [schoolName, setSchoolName] = useState<string>('');
@@ -66,17 +69,24 @@ export default function Dashboard() {
   });
 
   const [chartData, setChartData] = useState<any>({
-      subjectBar: { labels: [], datasets: [] },
-      trendLine: { labels: [], datasets: [] },
-      overallDonut: { labels: [], datasets: [] },
-      subjectBreakdown: {} // Restored for PDF reports
+      alTrend: { labels: [], datasets: [] },
+      olTrend: { labels: [], datasets: [] },
+      scholarshipTrend: { labels: [], datasets: [] },
+      marksTrend: { labels: [], datasets: [] },
+      olLatest: { labels: [], datasets: [] },
+      alLatest: { labels: [], datasets: [] },
+      scholarshipLatest: { labels: [], datasets: [] },
+      gradeDist: { labels: [], datasets: [] },
+      subjectRank: { labels: [], datasets: [] },
+      overallPie: { labels: [], datasets: [] }
   });
 
   // Filtering Logic
   const filteredRecords = records.filter(r => {
     const yearMatch = !selectedYear || r.year === selectedYear;
     const subjectMatch = selectedSubject === 'All Subjects' || r.subjects?.name === selectedSubject;
-    return yearMatch && subjectMatch;
+    const isNotScholarship = r.subjects?.name !== 'Grade 5 Scholarship' && r.subjects?.name !== '5 ශ්‍රේණිය ශිෂ්‍යත්වය';
+    return yearMatch && subjectMatch && isNotScholarship;
   });
 
   useEffect(() => {
@@ -95,7 +105,7 @@ export default function Dashboard() {
         const { data, error } = await supabase
           .from('exam_records')
           .select(`
-              id, year, total_students, pass_count, fail_count, subject_id,
+              id, year, total_students, pass_count, fail_count, subject_id, term, a_count, b_count, c_count, s_count, w_count,
               subjects (name)
           `)
           .eq('user_id', user.id)
@@ -110,6 +120,16 @@ export default function Dashboard() {
             if (allYearsDesc.length > 0 && !selectedYear) {
               setSelectedYear(allYearsDesc[0]);
             }
+        }
+
+        // Fetch student marks for summary
+        const { data: marksData, error: marksError } = await supabase
+          .from('student_marks')
+          .select('mark, term');
+        
+        if (marksError) throw marksError;
+        if (marksData) {
+            setMarksRecords(marksData);
         }
         
         const { data: profileData, error: profileError } = await supabase
@@ -137,107 +157,172 @@ export default function Dashboard() {
   useEffect(() => {
     if (records.length === 0) return;
 
-    // --- 1. Calculate Stats ---
-    const totalSat = filteredRecords.reduce((acc, r) => acc + (r.total_students || 0), 0);
-    const totalPass = filteredRecords.reduce((acc, r) => acc + (r.pass_count || 0), 0);
-    const totalFail = filteredRecords.reduce((acc, r) => acc + (r.fail_count || 0), 0);
-    const uniqueSubs = new Set(filteredRecords.map(r => r.subjects?.name)).size;
+    // --- 1. Calculate Stats (Overall) ---
+    const totalSat = records.reduce((acc, r) => acc + (r.total_students || 0), 0);
+    const totalPass = records.reduce((acc, r) => acc + (r.pass_count || 0), 0);
+    const totalFail = records.reduce((acc, r) => acc + (r.fail_count || 0), 0);
 
     setStats({
       totalStudents: totalSat,
       passCount: totalPass,
       failCount: totalFail,
-      subjectCount: uniqueSubs
+      subjectCount: new Set(records.map(r => r.subjects?.name)).size
     });
 
-    // --- 2. Chart: Yearly Trend (Line Chart) ---
-    // If a subject is selected, show its trend. If "All", show average trend.
+    // --- 2. Chart: Yearly Trends (5 Year) ---
     const years = [...new Set(records.map(r => r.year))].sort();
-    const passTrend = years.map(y => {
-      const yearRecs = records.filter(r => r.year === y && (selectedSubject === 'All Subjects' || r.subjects?.name === selectedSubject));
-      const total = yearRecs.reduce((acc, r) => acc + r.total_students, 0);
-      const pass = yearRecs.reduce((acc, r) => acc + r.pass_count, 0);
-      return total > 0 ? Math.round((pass / total) * 100) : 0;
+    
+    let trendData: number[] = [];
+    let trendLabel = '';
+    let trendColor = '#3b82f6';
+    let trendBgColor = 'rgba(59, 130, 246, 0.1)';
+
+    let participationData: number[] = [];
+    let successData: number[] = [];
+
+    if (selectedExam === 'AL') {
+      trendLabel = 'A/L Pass Rate %';
+      trendColor = '#059669';
+      trendBgColor = 'rgba(5, 150, 105, 0.1)';
+      trendData = years.map(y => {
+        const yearRecs = records.filter(r => r.year === y && r.subjects?.name.includes('(A/L)'));
+        const filteredRecs = selectedSubject === 'All Subjects' 
+          ? yearRecs 
+          : yearRecs.filter(r => r.subjects?.name === selectedSubject);
+        const total = filteredRecs.reduce((acc, r) => acc + r.total_students, 0);
+        const pass = filteredRecs.reduce((acc, r) => acc + r.pass_count, 0);
+        return total > 0 ? Math.round((pass / total) * 100) : 0;
+      });
+    } else if (selectedExam === 'OL') {
+      trendLabel = 'O/L Pass Rate %';
+      trendColor = '#3b82f6';
+      trendBgColor = 'rgba(59, 130, 246, 0.1)';
+      trendData = years.map(y => {
+        const yearRecs = records.filter(r => r.year === y && !r.subjects?.name.includes('(A/L)') && !r.subjects?.name.includes('Scholarship') && !r.subjects?.name.includes('ශිෂ්‍යත්වය'));
+        const filteredRecs = selectedSubject === 'All Subjects' 
+          ? yearRecs 
+          : yearRecs.filter(r => r.subjects?.name === selectedSubject);
+        const total = filteredRecs.reduce((acc, r) => acc + r.total_students, 0);
+        const pass = filteredRecs.reduce((acc, r) => acc + r.pass_count, 0);
+        return total > 0 ? Math.round((pass / total) * 100) : 0;
+      });
+    } else if (selectedExam === 'Scholarship') {
+      trendLabel = 'Scholarship Pass Rate %';
+      trendColor = '#f59e0b';
+      trendBgColor = 'rgba(245, 158, 11, 0.1)';
+      
+      participationData = years.map(y => {
+        const yearRecs = records.filter(r => r.year === y && (r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය')));
+        return yearRecs.reduce((acc, r) => acc + r.total_students, 0);
+      });
+      successData = years.map(y => {
+        const yearRecs = records.filter(r => r.year === y && (r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය')));
+        return yearRecs.reduce((acc, r) => acc + r.pass_count, 0);
+      });
+      
+      trendData = years.map(y => {
+        const yearRecs = records.filter(r => r.year === y && (r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය')));
+        const total = yearRecs.reduce((acc, r) => acc + r.total_students, 0);
+        const pass = yearRecs.reduce((acc, r) => acc + r.pass_count, 0);
+        return total > 0 ? Math.round((pass / total) * 100) : 0;
+      });
+    }
+
+    // --- 3. Marks Analysis (Term Test Summary) ---
+    const terms = [...new Set(marksRecords.map(m => m.term))].sort();
+    const termAverages = terms.map(t => {
+      const termRecs = marksRecords.filter(m => m.term === t);
+      const sum = termRecs.reduce((acc, r) => acc + r.mark, 0);
+      return termRecs.length > 0 ? Math.round(sum / termRecs.length) : 0;
     });
 
-    const failTrend = passTrend.map(p => p > 0 ? 100 - p : 0);
+    // --- 4. Latest Year Analysis ---
+    const latestYear = records.length > 0 ? Math.max(...records.map(r => r.year)) : 0;
+    const latestYearRecs = records.filter(r => r.year === latestYear);
 
-    // --- 3. Chart: Subject Comparison (Grouped Bar) ---
-    const yearRecords = records.filter(r => 
-        r.year === (selectedYear || records[0]?.year) &&
-        (selectedSubject === 'All Subjects' || r.subjects?.name === selectedSubject)
-    );
-    const subNames = [...new Set(yearRecords.map(r => r.subjects?.name))];
-    const subPassData = subNames.map(name => yearRecords.find(r => r.subjects?.name === name)?.pass_count || 0);
-    const subFailData = subNames.map(name => yearRecords.find(r => r.subjects?.name === name)?.fail_count || 0);
+    const olLatestRecs = latestYearRecs.filter(r => !r.subjects?.name.includes('(A/L)') && !r.subjects?.name.includes('Scholarship') && !r.subjects?.name.includes('ශිෂ්‍යත්වය'));
+    const olLabels = olLatestRecs.map(r => r.subjects?.name);
+    const olPassRates = olLatestRecs.map(r => r.total_students > 0 ? Math.round((r.pass_count / r.total_students) * 100) : 0);
 
-    // --- 4. Subject Breakdown for PDF Visual Insights ---
-    const subjectStats: any = {};
-    const yrRecs = records.filter(r => 
-        r.year === (selectedYear || records[0]?.year) &&
-        (selectedSubject === 'All Subjects' || r.subjects?.name === selectedSubject)
-    );
-    yrRecs.forEach(r => {
-        const name = r.subjects?.name || 'Unknown';
-        if (!subjectStats[name]) subjectStats[name] = { pass: 0, fail: 0 };
-        subjectStats[name].pass += r.pass_count;
-        subjectStats[name].fail += r.fail_count;
-    });
+    const alLatestRecs = latestYearRecs.filter(r => r.subjects?.name.includes('(A/L)'));
+    const alLabels = alLatestRecs.map(r => r.subjects?.name);
+    const alPassRates = alLatestRecs.map(r => r.total_students > 0 ? Math.round((r.pass_count / r.total_students) * 100) : 0);
+
+    const schLatestRecs = latestYearRecs.filter(r => r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය'));
+    const schLabels = schLatestRecs.map(r => r.subjects?.name);
+    const schSatCounts = schLatestRecs.map(r => r.total_students);
+    const schPassCounts = schLatestRecs.map(r => r.pass_count);
+
+    // --- 5. Grade Distribution (O/L Latest) ---
+    const gradeLabels = olLatestRecs.map(r => r.subjects?.name);
+    const aCounts = olLatestRecs.map(r => r.a_count || 0);
+    const bCounts = olLatestRecs.map(r => r.b_count || 0);
+    const cCounts = olLatestRecs.map(r => r.c_count || 0);
+    const sCounts = olLatestRecs.map(r => r.s_count || 0);
+    const wCounts = olLatestRecs.map(r => r.w_count || 0);
+
+    // --- 6. Subject Ranking (Top 5) ---
+    const sortedSubjects = [...latestYearRecs].sort((a, b) => {
+      const rateA = a.total_students > 0 ? a.pass_count / a.total_students : 0;
+      const rateB = b.total_students > 0 ? b.pass_count / b.total_students : 0;
+      return rateB - rateA;
+    }).slice(0, 5);
+    const topLabels = sortedSubjects.map(r => r.subjects?.name);
+    const topRates = sortedSubjects.map(r => r.total_students > 0 ? Math.round((r.pass_count / r.total_students) * 100) : 0);
+
+    // --- 7. Overall Pass/Fail Doughnut ---
+    const totalPassLatest = latestYearRecs.reduce((acc, r) => acc + (r.pass_count || 0), 0);
+    const totalFailLatest = latestYearRecs.reduce((acc, r) => acc + (r.fail_count || 0), 0);
 
     setChartData({
-      trendLine: {
+      activeTrend: {
+        labels: years,
+        datasets: [{ label: trendLabel, data: trendData, borderColor: trendColor, backgroundColor: trendBgColor, fill: true, tension: 0.4 }]
+      },
+      scholarshipMetrics: {
         labels: years,
         datasets: [
-          {
-            label: 'Pass Rate %',
-            data: passTrend,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 6,
-            pointHoverRadius: 8
-          },
-          {
-            label: 'Fail Rate %',
-            data: failTrend,
-            borderColor: '#f43f5e',
-            backgroundColor: 'rgba(244, 63, 94, 0.05)',
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            borderDash: [5, 5]
-          }
+          { label: 'Participation (Sat)', data: participationData, borderColor: '#64748b', backgroundColor: 'rgba(100, 116, 139, 0.1)', fill: true, tension: 0.4 },
+          { label: 'Success (Passed)', data: successData, borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4 }
         ]
       },
-      subjectBar: {
-        labels: subNames,
+      marksTrend: {
+        labels: terms.map(t => `Term ${t}`),
+        datasets: [{ label: 'Avg Mark', data: termAverages, backgroundColor: '#8b5cf6', borderRadius: 6 }]
+      },
+      olLatest: {
+        labels: olLabels,
+        datasets: [{ label: 'Pass Rate %', data: olPassRates, backgroundColor: '#3b82f6', borderRadius: 4 }]
+      },
+      alLatest: {
+        labels: alLabels,
+        datasets: [{ label: 'Pass Rate %', data: alPassRates, backgroundColor: '#059669', borderRadius: 4 }]
+      },
+      scholarshipLatest: {
+        labels: schLabels,
         datasets: [
-          {
-            label: 'Passed',
-            data: subPassData,
-            backgroundColor: '#10b981',
-            borderRadius: 6
-          },
-          {
-            label: 'Failed',
-            data: subFailData,
-            backgroundColor: '#f43f5e',
-            borderRadius: 6
-          }
+          { label: 'Sitted Students', data: schSatCounts, backgroundColor: '#94a3b8', borderRadius: 4 },
+          { label: 'Passed Students', data: schPassCounts, backgroundColor: '#f59e0b', borderRadius: 4 }
         ]
       },
-      overallDonut: {
-        labels: ['Passed', 'Failed'],
-        datasets: [{
-          data: [totalPass, totalFail],
-          backgroundColor: ['#10b981', '#f43f5e'],
-          hoverOffset: 15,
-          borderWidth: 0,
-          cutout: '75%'
-        }]
+      gradeDist: {
+        labels: gradeLabels,
+        datasets: [
+          { label: 'A', data: aCounts, backgroundColor: '#10b981' },
+          { label: 'B', data: bCounts, backgroundColor: '#3b82f6' },
+          { label: 'C', data: cCounts, backgroundColor: '#f59e0b' },
+          { label: 'S', data: sCounts, backgroundColor: '#64748b' },
+          { label: 'W', data: wCounts, backgroundColor: '#f43f5e' }
+        ]
       },
-      subjectBreakdown: subjectStats
+      subjectRank: {
+        labels: topLabels,
+        datasets: [{ label: 'Pass Rate %', data: topRates, backgroundColor: '#8b5cf6', borderRadius: 4 }]
+      },
+      overallPie: {
+        labels: ['Pass', 'Fail'],
+        datasets: [{ data: [totalPassLatest, totalFailLatest], backgroundColor: ['#10b981', '#f43f5e'] }]
+      }
     });
 
     // Auto-scroll to charts when filtering to ensure user sees updated data
@@ -247,7 +332,7 @@ export default function Dashboard() {
             topOfCharts.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
-  }, [selectedYear, selectedSubject, records]);
+  }, [selectedYear, selectedSubject, selectedExam, records]);
 
   const passRate = (stats.passCount + stats.failCount) > 0 
     ? Math.round((stats.passCount / (stats.passCount + stats.failCount)) * 100)
@@ -623,265 +708,250 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="fade-in">
-      {/* HEADER & BRANDING */}
+    <div className="fade-in" style={{ padding: '2rem' }}>
+      {/* HEADER */}
       <header style={{ marginBottom: '2.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--primary)', marginBottom: '0.5rem' }}>
                 <TrendingUp size={20} />
-                <span style={{ fontWeight: '700', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>EduInsights Pro Analytics</span>
+                <span style={{ fontWeight: '700', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Overall School Progress</span>
             </div>
             <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', letterSpacing: '-0.03em' }}>
-              Academic Performance
+              Academic Dashboard
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px' }}>
-              Strategic insights for <b style={{ color: 'var(--primary)' }}>{schoolName}</b>
+            <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
+              High-level overview of school performance and trends.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '0.75rem', width: '100%', maxWidth: '400px' }}>
-              <button onClick={handleExportPDF} className="btn-secondary" style={{ flex: 1 }}>
-                  <Printer size={18} /> Report
-              </button>
-              <Link href="/dashboard/add" className="btn-primary" style={{ flex: 1 }}>
-                  <PlusCircle size={20} /> New Record
-              </Link>
-          </div>
         </div>
 
-        {/* 1. COMMAND FILTERS (STICKY) */}
-        <div className="sticky-command-bar">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Academic Year</label>
-                <select 
-                    value={selectedYear || ''} 
-                    onChange={(e) => setSelectedYear(Number(e.target.value))}
-                    className="select-premium"
-                >
-                    {availableYears.map(year => (
-                        <option key={year} value={year}>{year}</option>
-                    ))}
-                </select>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Filter Subject</label>
-                <select 
-                    value={selectedSubject} 
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="select-premium"
-                >
-                    <option value="All Subjects">All Subjects</option>
-                    {uniqueSubjectNames.map(name => (
-                        <option key={name} value={name}>{name}</option>
-                    ))}
-                </select>
-            </div>
-        </div>
-
-        {/* 2. TOP SUMMARY CARDS */}
+        {/* STATS */}
         <div className="stats-grid" style={{ marginTop: '2rem' }}>
-          <div className="card" style={{ borderLeft: '4px solid var(--primary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Total Students Sat</span>
-              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--primary-light)' }}>
-                <Users size={18} color="var(--primary)" />
-              </div>
-            </div>
+          <div className="card">
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: '600' }}>Total Students Sat (All Time)</div>
             <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.totalStudents.toLocaleString()}</div>
           </div>
-
-          <div className="card" style={{ borderLeft: '4px solid var(--success)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Total Passed</span>
-              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--success-light)' }}>
-                <Award size={18} color="var(--success)" />
-              </div>
-            </div>
+          <div className="card">
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: '600' }}>Total Passed</div>
             <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.passCount.toLocaleString()}</div>
           </div>
-
-          <div className="card" style={{ borderLeft: '4px solid var(--error)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Total Failed</span>
-              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--error-light)' }}>
-                <MinusCircle size={18} color="var(--error)" />
-              </div>
-            </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{stats.failCount.toLocaleString()}</div>
-          </div>
-
-          <div className="card" style={{ borderLeft: '4px solid var(--accent)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Overall Pass Rate</span>
-              <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'var(--warning-light)' }}>
-                <TrendingUp size={18} color="var(--accent)" />
-              </div>
-            </div>
+          <div className="card">
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: '600' }}>Overall Pass Rate</div>
             <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{passRate}%</div>
           </div>
         </div>
       </header>
 
-      {/* 3. YEARLY PERFORMANCE TREND (Full Width Line Chart) */}
-      <section id="charts-start" className="card" style={{ marginBottom: '2.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>Yearly Performance Trend</h3>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Historical success vs failure analysis</p>
+      {/* LATEST YEAR RESULTS SECTION */}
+      <section style={{ marginBottom: '3rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Latest Year ({latestYear}) Results Analysis</h2>
+          <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+              {/* O/L Latest */}
+              <div className="card">
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>G.C.E. O/L Results</h3>
+                  <div style={{ height: '250px' }}>
+                      <Bar 
+                        data={chartData.olLatest} 
+                        options={{ 
+                          responsive: true, 
+                          maintainAspectRatio: false, 
+                          plugins: { legend: { display: false } },
+                          scales: { y: { beginAtZero: true, max: 100 } }
+                        }}
+                      />
+                  </div>
               </div>
-              <button onClick={() => downloadChart(lineChartRef, 'Historical-Trend')} className="btn-secondary" style={{ padding: '8px', width: 'auto' }}>
-                  <ImageIcon size={18} />
-              </button>
-          </div>
-          <div style={{ height: '300px' }}>
-              <Line 
-                ref={lineChartRef}
-                data={chartData.trendLine} 
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { position: 'top', labels: { usePointStyle: true, font: { weight: 600, size: 10 } } },
-                    tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12 }
-                  },
-                  scales: {
-                    y: { min: 0, max: 100, ticks: { font: { size: 10 } } },
-                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-                  }
-                }}
-              />
+
+              {/* A/L Latest */}
+              <div className="card">
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>G.C.E. A/L Results</h3>
+                  <div style={{ height: '250px' }}>
+                      <Bar 
+                        data={chartData.alLatest} 
+                        options={{ 
+                          responsive: true, 
+                          maintainAspectRatio: false, 
+                          plugins: { legend: { display: false } },
+                          scales: { y: { beginAtZero: true, max: 100 } }
+                        }}
+                      />
+                  </div>
+              </div>
+
+              {/* Scholarship Latest */}
+              <div className="card">
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>Scholarship Results</h3>
+                  <div style={{ height: '250px' }}>
+                      <Bar 
+                        data={chartData.scholarshipLatest} 
+                        options={{ 
+                          responsive: true, 
+                          maintainAspectRatio: false, 
+                          plugins: { legend: { display: true } },
+                          scales: { y: { beginAtZero: true } }
+                        }}
+                      />
+                  </div>
+              </div>
           </div>
       </section>
 
-      {/* 4. SUBJECT-WISE & DISTRIBUTION GRID */}
-      <div className="dashboard-grid" style={{ marginBottom: '2.5rem' }}>
-          {/* Subject-wise Bar Chart */}
-          <div className="card">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>Subject Performance</h3>
-                  <button onClick={() => downloadChart(barChartRef, 'Subject-Comparison')} className="btn-secondary" style={{ padding: '8px', width: 'auto' }}>
-                      <ImageIcon size={18} />
-                  </button>
+      {/* DEEP DIVE ANALYTICS SECTION */}
+      <section style={{ marginBottom: '3rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Advanced Insights ({latestYear})</h2>
+          <div className="dashboard-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+              {/* Grade Distribution */}
+              <div className="card">
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>O/L Grade Distribution</h3>
+                  <div style={{ height: '250px' }}>
+                      <Bar 
+                        data={chartData.gradeDist} 
+                        options={{ 
+                          responsive: true, 
+                          maintainAspectRatio: false, 
+                          plugins: { legend: { display: true } },
+                          scales: { x: { stacked: true }, y: { beginAtZero: true, stacked: true } }
+                        }}
+                      />
+                  </div>
               </div>
+
+              {/* Subject Ranking */}
+              <div className="card">
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>Top 5 Subjects by Pass Rate</h3>
+                  <div style={{ height: '250px' }}>
+                      <Bar 
+                        data={chartData.subjectRank} 
+                        options={{ 
+                          responsive: true, 
+                          maintainAspectRatio: false, 
+                          indexAxis: 'y', // Horizontal Bar
+                          plugins: { legend: { display: false } },
+                          scales: { x: { beginAtZero: true, max: 100 } }
+                        }}
+                      />
+                  </div>
+              </div>
+
+              {/* Pass/Fail Doughnut */}
+              <div className="card">
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>Overall Success Rate</h3>
+                  <div style={{ height: '250px' }}>
+                      <Doughnut 
+                        data={chartData.overallPie} 
+                        options={{ 
+                          responsive: true, 
+                          maintainAspectRatio: false, 
+                          plugins: { legend: { display: true, position: 'bottom' } }
+                        }}
+                      />
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      {/* 5-YEAR TRENDS SECTION */}
+      <section style={{ marginBottom: '3rem' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Performance Trends</h2>
+          
+          {/* Filters */}
+          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div>
+                  <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>Select Exam</label>
+                  <select 
+                    value={selectedExam} 
+                    onChange={(e) => setSelectedExam(e.target.value as any)}
+                    className="select-premium"
+                    style={{ minWidth: '150px' }}
+                  >
+                      <option value="OL">G.C.E. O/L</option>
+                      <option value="AL">G.C.E. A/L</option>
+                      <option value="Scholarship">Scholarship</option>
+                  </select>
+              </div>
+
+              {(selectedExam === 'OL' || selectedExam === 'AL') && (
+                  <div>
+                      <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>Select Subject</label>
+                      <select 
+                        value={selectedSubject} 
+                        onChange={(e) => setSelectedSubject(e.target.value)}
+                        className="select-premium"
+                        style={{ minWidth: '200px' }}
+                      >
+                          <option value="All Subjects">All Subjects</option>
+                          {uniqueSubjectNames
+                            .filter(name => {
+                              if (selectedExam === 'AL') return name.includes('(A/L)');
+                              if (selectedExam === 'OL') return !name.includes('(A/L)') && !name.includes('Scholarship') && !name.includes('ශිෂ්‍යත්වය');
+                              return true;
+                            })
+                            .map(name => (
+                              <option key={name} value={name}>{name}</option>
+                          ))}
+                      </select>
+                  </div>
+              )}
+          </div>
+
+          <div className="dashboard-grid" style={{ gridTemplateColumns: '1fr', gap: '2rem' }}>
+              {selectedExam !== 'Scholarship' ? (
+                  <div className="card">
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>
+                          {selectedExam} Performance Trend - {selectedSubject}
+                      </h3>
+                      <div style={{ height: '350px' }}>
+                          <Line 
+                            data={chartData.activeTrend} 
+                            options={{ 
+                              responsive: true, 
+                              maintainAspectRatio: false, 
+                              plugins: { legend: { display: false } },
+                              scales: { y: { beginAtZero: true, max: 100 } }
+                            }}
+                          />
+                      </div>
+                  </div>
+              ) : (
+                  <div className="card">
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>
+                          Scholarship Participation & Success Metrics
+                      </h3>
+                      <div style={{ height: '350px' }}>
+                          <Line 
+                            data={chartData.scholarshipMetrics} 
+                            options={{ 
+                              responsive: true, 
+                              maintainAspectRatio: false, 
+                              plugins: { legend: { display: true } },
+                              scales: { y: { beginAtZero: true } }
+                            }}
+                          />
+                      </div>
+                  </div>
+              )}
+          </div>
+      </section>
+
+      {/* MARKS ANALYSIS SECTION */}
+      <section>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Term Test Marks Analysis</h2>
+          <div className="card" style={{ maxWidth: '600px' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1rem' }}>Average Marks per Term</h3>
               <div style={{ height: '300px' }}>
                   <Bar 
-                    ref={barChartRef}
-                    data={chartData.subjectBar}
+                    data={chartData.marksTrend} 
                     options={{
                       responsive: true,
                       maintainAspectRatio: false,
                       plugins: { legend: { display: false } },
-                      scales: {
-                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-                        y: { beginAtZero: true, ticks: { font: { size: 10 } } }
-                      }
+                      scales: { y: { beginAtZero: true, max: 100 } }
                     }}
                   />
               </div>
           </div>
-
-          {/* Pass vs Fail Distribution */}
-          <div className="card">
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '1.5rem' }}>Overall Distribution</h3>
-              <div style={{ height: '250px', position: 'relative' }}>
-                  <Doughnut 
-                    ref={donutChartRef}
-                    data={chartData.overallDonut}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
-                    }}
-                  />
-                  <div style={{ 
-                      position: 'absolute', 
-                      top: '42%', 
-                      left: '50%', 
-                      transform: 'translate(-50%, -50%)',
-                      textAlign: 'center'
-                  }}>
-                      <div style={{ fontSize: '1.75rem', fontWeight: '900', color: 'var(--text-main)' }}>{passRate}%</div>
-                      <div style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Success</div>
-                  </div>
-              </div>
-          </div>
-      </div>
-
-      {/* 5. DATA TABLE */}
-      <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>Tabular Data Summary</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Detailed drill-down for {selectedYear}</p>
-              </div>
-              <button onClick={handleExportExcel} className="btn-secondary" style={{ width: 'auto' }}>
-                  <Download size={18} /> Export Excel
-              </button>
-          </div>
-          
-          <div className="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Subject</th>
-                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Sat</th>
-                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Passed</th>
-                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Failed</th>
-                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Success %</th>
-                        <th style={{ fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredRecords.map(record => (
-                        <tr key={record.id}>
-                            <td style={{ fontWeight: '700', color: 'var(--text-main)' }}>{record.subjects?.name}</td>
-                            <td>
-                                {editingId === record.id ? (
-                                    <input 
-                                        type="number" 
-                                        value={editValues.totalSat}
-                                        onChange={(e) => setEditValues({...editValues, totalSat: e.target.value})}
-                                        style={{ width: '60px', padding: '4px', borderRadius: '4px', border: '1px solid var(--surface-border)' }}
-                                    />
-                                ) : record.total_students}
-                            </td>
-                            <td>
-                                {editingId === record.id ? (
-                                    <input 
-                                        type="number" 
-                                        value={editValues.passCount}
-                                        onChange={(e) => setEditValues({...editValues, passCount: e.target.value})}
-                                        style={{ width: '60px', padding: '4px', borderRadius: '4px', border: '1px solid var(--surface-border)' }}
-                                    />
-                                ) : record.pass_count}
-                            </td>
-                            <td style={{ color: 'var(--error)', fontWeight: '600' }}>{record.fail_count}</td>
-                            <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <div style={{ flex: 1, height: '6px', backgroundColor: 'var(--primary-light)', borderRadius: '3px', width: '60px' }}>
-                                        <div style={{ 
-                                            width: `${Math.round((record.pass_count/record.total_students)*100)}%`, 
-                                            height: '100%', 
-                                            backgroundColor: (record.pass_count/record.total_students) > 0.5 ? 'var(--success)' : 'var(--error)',
-                                            borderRadius: '3px'
-                                        }}></div>
-                                    </div>
-                                    <span style={{ fontWeight: '700', fontSize: '0.85rem' }}>{Math.round((record.pass_count/record.total_students)*100)}%</span>
-                                </div>
-                            </td>
-                            <td>
-                                {editingId === record.id ? (
-                                    <button onClick={() => handleSaveEdit(record.id)} className="btn-primary" style={{ padding: '6px 12px', fontSize: '0.75rem', width: 'auto' }}>Save</button>
-                                ) : (
-                                    <button onClick={() => handleStartEdit(record)} className="btn-secondary" style={{ padding: '6px 12px', fontSize: '0.75rem', width: 'auto' }}>Edit</button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-          </div>
-      </div>
+      </section>
     </div>
   );
 }

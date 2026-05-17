@@ -11,6 +11,8 @@ export const translations = {
     settings: "Settings",
     signOut: "Sign Out",
     portalTitle: "Academic Analytics Portal",
+    scholarship: "Grade 5 Scholarship",
+    al: "G.C.E. A/L",
 
     // Dashboard Overview
     overviewTitle: "Academic Overview",
@@ -73,6 +75,8 @@ export const translations = {
     settings: "සැකසුම්",
     signOut: "ඉවත් වන්න",
     portalTitle: "ශාස්ත්‍රීය විශ්ලේෂණ ද්වාරය",
+    scholarship: "5 ශ්‍රේණිය ශිෂ්‍යත්වය",
+    al: "G.C.E. A/L (උසස් පෙළ)",
 
     // Dashboard Overview
     overviewTitle: "ශාස්ත්‍රීය දළ විශ්ලේෂණය",

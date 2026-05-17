@@ -34,6 +34,7 @@ export default function TrendsPage() {
   const [loading, setLoading] = useState(true);
   const [records, setRecords] = useState<any[]>([]);
   const [trendSubject, setTrendSubject] = useState<string>('All Subjects');
+  const [selectedExam, setSelectedExam] = useState<'OL' | 'AL' | 'Scholarship'>('OL');
   const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
 
   useEffect(() => {
@@ -89,22 +90,30 @@ export default function TrendsPage() {
     let yearlyTotal: number[] = [];
     let yearlyAvgPass: number[] = [];
 
-    if (trendSubject === 'All Subjects') {
+    // Filter records by exam type
+    const examRecs = records.filter(r => {
+        if (selectedExam === 'AL') return r.subjects?.name.includes('(A/L)');
+        if (selectedExam === 'OL') return !r.subjects?.name.includes('(A/L)') && !r.subjects?.name.includes('Scholarship') && !r.subjects?.name.includes('ශිෂ්‍යත්වය');
+        if (selectedExam === 'Scholarship') return r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය');
+        return true;
+    });
+
+    if (selectedExam === 'Scholarship' || trendSubject === 'All Subjects') {
         yearlyTotal = trendYears.map(y => {
-            const yrRecs = records.filter(r => r.year === y);
+            const yrRecs = examRecs.filter(r => r.year === y);
             return yrRecs.reduce((acc, r) => acc + (r.total_students || 0), 0);
         });
         yearlyAvgPass = trendYears.map(y => {
-            const yrRecs = records.filter(r => r.year === y);
+            const yrRecs = examRecs.filter(r => r.year === y);
             return yrRecs.reduce((acc, r) => acc + (r.pass_count || 0), 0);
         });
     } else {
         yearlyTotal = trendYears.map(y => {
-            const rec = records.find(r => r.year === y && r.subjects?.name === trendSubject);
+            const rec = examRecs.find(r => r.year === y && r.subjects?.name === trendSubject);
             return rec ? rec.total_students : 0;
         });
         yearlyAvgPass = trendYears.map(y => {
-            const rec = records.find(r => r.year === y && r.subjects?.name === trendSubject);
+            const rec = examRecs.find(r => r.year === y && r.subjects?.name === trendSubject);
             return rec ? rec.pass_count : 0;
         });
     }
@@ -128,7 +137,7 @@ export default function TrendsPage() {
             }
         ]
     });
-  }, [trendSubject, records]);
+  }, [trendSubject, selectedExam, records]);
 
   const handleExportPDF = async () => {
     const { default: jsPDF } = await import('jspdf');
@@ -322,20 +331,47 @@ export default function TrendsPage() {
 
                 <div style={{ position: 'relative', flex: 1 }}>
                     <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', paddingLeft: '4px' }}>
-                        {t('subjectFilter')}
+                        Select Exam
                     </label>
                     <select 
-                        value={trendSubject} 
-                        onChange={(e) => setTrendSubject(e.target.value)}
+                        value={selectedExam} 
+                        onChange={(e) => {
+                            setSelectedExam(e.target.value as any);
+                            setTrendSubject('All Subjects'); // Reset subject when exam changes
+                        }}
                         className="select-premium"
                         style={{ width: '100%' }}
                     >
-                        <option value="All Subjects">Average (All Subjects)</option>
-                        {uniqueSubjectNames.map(name => (
-                            <option key={name} value={name}>{name}</option>
-                        ))}
+                        <option value="OL">G.C.E. O/L</option>
+                        <option value="AL">G.C.E. A/L</option>
+                        <option value="Scholarship">Scholarship</option>
                     </select>
                 </div>
+
+                {(selectedExam === 'OL' || selectedExam === 'AL') && (
+                    <div style={{ position: 'relative', flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', paddingLeft: '4px' }}>
+                            {t('subjectFilter')}
+                        </label>
+                        <select 
+                            value={trendSubject} 
+                            onChange={(e) => setTrendSubject(e.target.value)}
+                            className="select-premium"
+                            style={{ width: '100%' }}
+                        >
+                            <option value="All Subjects">Average (All Subjects)</option>
+                            {uniqueSubjectNames
+                                .filter(name => {
+                                    if (selectedExam === 'AL') return name.includes('(A/L)');
+                                    if (selectedExam === 'OL') return !name.includes('(A/L)') && !name.includes('Scholarship') && !name.includes('ශිෂ්‍යත්වය');
+                                    return true;
+                                })
+                                .map(name => (
+                                    <option key={name} value={name}>{name}</option>
+                                ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
