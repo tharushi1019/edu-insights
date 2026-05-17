@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, PlusCircle, FileUp, BarChart3, Settings, LogOut, GraduationCap, TrendingUp, Building2, Languages, Menu, X, Users, BookOpen } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, FileUp, BarChart3, Settings, LogOut, GraduationCap, TrendingUp, Building2, Languages, Menu, X, Users, BookOpen, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -148,6 +148,9 @@ export default function DashboardLayout({
           </Link>
           <Link href="/dashboard/admin/students" className={`nav-link ${pathname === '/dashboard/admin/students' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
             <Users size={20} /> <span>Students</span>
+          </Link>
+          <Link href="/dashboard/reports" className={`nav-link ${pathname === '/dashboard/reports' ? 'active' : ''}`} onClick={() => setIsMenuOpen(false)}>
+            <FileText size={20} /> <span>Reports</span>
           </Link>
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--surface-border)', margin: '0.5rem 0' }} />

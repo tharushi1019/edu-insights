@@ -65,6 +65,15 @@ export const translations = {
     welcome: "Welcome to EduInsights!",
     onboardingDesc: "To personalize your academic reports, please enter your institution's name.",
     getStarted: "Get Started",
+
+    // Reports
+    reportsTitle: "Zonal Performance Reports",
+    reportsSubtitle: "Generate official zonal academic reports, progressions, and multi-year summaries.",
+    zonalReport: "G.C.E. Results Analysis (Zonal Sheet)",
+    continuousRoster: "Student Multi-Year Progression Grid",
+    subjectTrend: "Multi-Year Subject Trend Report",
+    absentCount: "Absent (ab)",
+    passRatePercent: "Pass Rate %",
   },
   si: {
     // Sidebar / Navigation
@@ -129,5 +138,14 @@ export const translations = {
     welcome: "EduInsights වෙත සාදරයෙන් පිළිගනිමු!",
     onboardingDesc: "ඔබේ ශාස්ත්‍රීය වාර්තා පුද්ගලීකරණය කිරීමට, කරුණාකර ඔබේ පාසලේ නම ඇතුළත් කරන්න.",
     getStarted: "ආරම්භ කරන්න",
+
+    // Reports
+    reportsTitle: "සාධන විශ්ලේෂණ වාර්තා",
+    reportsSubtitle: "නිල කලාපීය ශාස්ත්‍රීය වාර්තා, ශිෂ්‍ය ප්‍රගති සටහන් සහ බහු-වසර ප්‍රවණතා මෙහිදී බාගත කර මුද්‍රණය කළ හැක.",
+    zonalReport: "විභාග ප්‍රතිඵල විශ්ලේෂණය (කලාපීය ලේඛනය)",
+    continuousRoster: "ශිෂ්‍ය සාධන මට්ටම් පත්‍රිකාව (ප්‍රගති සටහන)",
+    subjectTrend: "බහු-වසර විෂය ප්‍රගති විශ්ලේෂණය",
+    absentCount: "නොපැමිණි (ab)",
+    passRatePercent: "ප්‍රතිශතය %",
   }
 };
