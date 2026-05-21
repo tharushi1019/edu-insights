@@ -351,9 +351,34 @@ export default function ALDashboard() {
   };
 
   const handleDownloadTemplate = () => {
+    const currentYear = new Date().getFullYear();
     const templateData = [
-      { Year: 2026, Subject: 'Combined Maths (A/L)', Total: 50, A: 5, B: 10, C: 15, S: 15, W: 5 },
-      { Year: 2026, Subject: 'Physics (A/L)', Total: 48, A: 3, B: 8, C: 12, S: 20, W: 5 },
+      { Year: currentYear, Subject: 'General English (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Common General Test (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Combined Mathematics (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Physics (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Chemistry (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Biology (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Information & Communication Technology (ICT) (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Accounting (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Business Studies (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Economics (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Business Statistics (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Engineering Technology (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Bio Systems Technology (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Science for Technology (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Geography (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Political Science (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'History (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Logic & Scientific Method (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Media & Communication Studies (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Sinhala (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Art (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Dancing (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Music (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Drama & Theatre (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Home Economics (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Agricultural Science (A/L)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 }
     ];
 
     const ws = XLSX.utils.json_to_sheet(templateData);
