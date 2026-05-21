@@ -404,9 +404,33 @@ export default function OLPage() {
   };
 
   const handleDownloadTemplate = () => {
+    const currentYear = new Date().getFullYear();
     const templateData = [
-      { Year: 2026, Subject: 'Mathematics', Total: 120, A: 20, B: 30, C: 40, S: 20, W: 10 },
-      { Year: 2026, Subject: 'Science', Total: 118, A: 15, B: 25, C: 35, S: 30, W: 13 },
+      { Year: currentYear, Subject: 'Mathematics', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Science', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'History', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'English', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'First Language - Sinhala', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'First Language - Tamil', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Religion - Buddhism', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Religion - Islam', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Religion - Roman Catholic', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Religion - Hinduism', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Business & Accounting Studies', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Geography', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Civic Education', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Entrepreneurship Studies', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Music - Oriental', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Music - Western', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Dancing - Sinhala', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Art', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Drama and Theatre - Sinhala', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Appreciation of Literary Texts - English', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Appreciation of Literary Texts - Sinhala', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Information & Communication Technology (ICT)', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Agriculture & Food Technology', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Health & Physical Education', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 },
+      { Year: currentYear, Subject: 'Home Economics', Total: 0, A: 0, B: 0, C: 0, S: 0, W: 0 }
     ];
 
     const ws = XLSX.utils.json_to_sheet(templateData);
