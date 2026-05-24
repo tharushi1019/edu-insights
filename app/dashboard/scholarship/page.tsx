@@ -55,11 +55,12 @@ export default function ScholarshipDashboard() {
     year: new Date().getFullYear(),
     totalSat: '',
     passCount: '',
+    above70Count: '',
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState({ totalSat: '', passCount: '' });
+  const [editValues, setEditValues] = useState({ totalSat: '', passCount: '', above70Count: '' });
 
 
 
@@ -87,7 +88,7 @@ export default function ScholarshipDashboard() {
             const { data, error } = await supabase
               .from('exam_records')
               .select(`
-                  id, year, total_students, pass_count, fail_count, subject_id, exam_type
+                  id, year, total_students, pass_count, fail_count, subject_id, exam_type, above_70_count
               `)
               .eq('user_id', user.id)
               .eq('exam_type', 'SCHOLARSHIP')
@@ -122,7 +123,8 @@ export default function ScholarshipDashboard() {
     totalStudents: filteredRecords.reduce((acc, r) => acc + (r.total_students || 0), 0),
     passCount: filteredRecords.reduce((acc, r) => acc + (r.pass_count || 0), 0),
     failCount: filteredRecords.reduce((acc, r) => acc + (r.fail_count || 0), 0),
-  } : { totalStudents: 0, passCount: 0, failCount: 0 };
+    above70Count: filteredRecords.reduce((acc, r) => acc + (r.above_70_count || 0), 0),
+  } : { totalStudents: 0, passCount: 0, failCount: 0, above70Count: 0 };
 
   const chartData = records.length > 0 ? {
     trendLine: {
@@ -137,6 +139,16 @@ export default function ScholarshipDashboard() {
           tension: 0.4,
           pointRadius: 6,
           pointHoverRadius: 8
+        },
+        {
+          label: 'Scored >= 70% Rate %',
+          data: records.map(r => r.total_students > 0 ? Math.round(((r.above_70_count || 0) / r.total_students) * 100) : 0),
+          borderColor: '#a855f7',
+          backgroundColor: 'rgba(168, 85, 247, 0.05)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 7
         }
       ]
     },
@@ -154,7 +166,8 @@ export default function ScholarshipDashboard() {
       labels: filteredRecords.map(r => r.year),
       datasets: [
         { label: 'Sitted Students', data: filteredRecords.map(r => r.total_students), backgroundColor: '#94a3b8', borderRadius: 4 },
-        { label: 'Passed Students', data: filteredRecords.map(r => r.pass_count), backgroundColor: '#f59e0b', borderRadius: 4 }
+        { label: 'Passed Students', data: filteredRecords.map(r => r.pass_count), backgroundColor: '#f59e0b', borderRadius: 4 },
+        { label: 'Scored >= 70%', data: filteredRecords.map(r => r.above_70_count || 0), backgroundColor: '#a855f7', borderRadius: 4 }
       ]
     }
   } : {
@@ -291,14 +304,14 @@ export default function ScholarshipDashboard() {
     
     autoTable(doc, {
       startY: currentY + 5,
-      head: [['YEAR', 'TOTAL SAT', 'PASSED', 'FAILED', 'PASS RATE']],
+      head: [['YEAR', 'TOTAL SAT', 'PASSED', 'SCORED >= 70%', 'FAILED', 'PASS RATE']],
       body: records.map(r => [
-          r.year, r.total_students, r.pass_count, r.fail_count, `${Math.round((r.pass_count/r.total_students)*100)}%`
+          r.year, r.total_students, r.pass_count, r.above_70_count || 0, r.fail_count, `${Math.round((r.pass_count/r.total_students)*100)}%`
       ]),
       theme: 'grid',
       headStyles: { fillColor: [15, 23, 42], halign: 'center' },
       styles: { fontSize: 8 },
-      columnStyles: { 4: { halign: 'center', fontStyle: 'bold' } }
+      columnStyles: { 5: { halign: 'center', fontStyle: 'bold' } }
     });
 
     // Donut Chart
@@ -326,7 +339,8 @@ export default function ScholarshipDashboard() {
       setEditingId(record.id);
       setEditValues({
           totalSat: record.total_students.toString(),
-          passCount: record.pass_count.toString()
+          passCount: record.pass_count.toString(),
+          above70Count: (record.above_70_count || 0).toString()
       });
   };
 
@@ -334,6 +348,7 @@ export default function ScholarshipDashboard() {
       try {
           const totalSat = parseInt(editValues.totalSat);
           const passCount = parseInt(editValues.passCount);
+          const above70 = parseInt(editValues.above70Count) || 0;
 
           if (isNaN(totalSat) || isNaN(passCount)) {
               alert('Please enter valid numbers');
@@ -345,12 +360,18 @@ export default function ScholarshipDashboard() {
               return;
           }
 
+          if (above70 > totalSat) {
+              alert('Scored >= 70% count cannot exceed total students');
+              return;
+          }
+
           const { error } = await supabase
               .from('exam_records')
               .update({
                   total_students: totalSat,
                   pass_count: passCount,
-                  fail_count: totalSat - passCount
+                  fail_count: totalSat - passCount,
+                  above_70_count: above70
               })
               .eq('id', id);
 
@@ -371,7 +392,7 @@ export default function ScholarshipDashboard() {
               if (subjectIds.length > 0) {
                   const { data } = await supabase
                     .from('exam_records')
-                    .select(`id, year, total_students, pass_count, fail_count, subject_id, exam_type`)
+                    .select(`id, year, total_students, pass_count, fail_count, subject_id, exam_type, above_70_count`)
                     .eq('user_id', user.id)
                     .eq('exam_type', 'SCHOLARSHIP')
                     .in('subject_id', subjectIds)
@@ -441,18 +462,19 @@ export default function ScholarshipDashboard() {
           total_students: parseInt(formData.totalSat),
           pass_count: parseInt(formData.passCount),
           fail_count: parseInt(formData.totalSat) - parseInt(formData.passCount),
+          above_70_count: parseInt(formData.above70Count) || 0,
           exam_type: 'SCHOLARSHIP'
         });
 
       if (error) throw error;
 
       setStatus('success');
-      setFormData({ year: new Date().getFullYear(), totalSat: '', passCount: '' });
+      setFormData({ year: new Date().getFullYear(), totalSat: '', passCount: '', above70Count: '' });
       
       // Refresh data
       const { data: updatedData } = await supabase
         .from('exam_records')
-        .select(`id, year, total_students, pass_count, fail_count, subject_id, exam_type`)
+        .select(`id, year, total_students, pass_count, fail_count, subject_id, exam_type, above_70_count`)
         .eq('user_id', user.id)
         .eq('exam_type', 'SCHOLARSHIP')
         .eq('subject_id', subjectId)
@@ -543,6 +565,21 @@ export default function ScholarshipDashboard() {
           </div>
           <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>{overallPassRate}%</div>
         </div>
+
+        <div className="card" style={{ borderLeft: '4px solid #a855f7' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+            <span style={{ color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.85rem' }}>Scored &ge; 70% Marks</span>
+            <div style={{ padding: '6px', borderRadius: '8px', backgroundColor: 'rgba(168, 85, 247, 0.1)' }}>
+              <Award size={18} color="#a855f7" />
+            </div>
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)' }}>
+            {stats.above70Count.toLocaleString()}
+            <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginLeft: '8px', fontWeight: '500' }}>
+              ({stats.totalStudents > 0 ? Math.round((stats.above70Count / stats.totalStudents) * 100) : 0}%)
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Top Row: Bar and Donut */}
@@ -631,7 +668,7 @@ export default function ScholarshipDashboard() {
                   options={{
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { legend: { display: true, position: 'top', labels: { font: { size: 10 } } } },
                     scales: {
                       y: { min: 0, max: 100, ticks: { font: { size: 10 } } },
                       x: { grid: { display: false }, ticks: { font: { size: 10 } } }
@@ -685,6 +722,18 @@ export default function ScholarshipDashboard() {
             />
           </div>
           <div>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>Scored &ge; 70% Marks</label>
+            <input 
+              type="number" 
+              name="above70Count"
+              value={formData.above70Count}
+              onChange={handleFormChange}
+              required
+              placeholder="Scored >= 70%"
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--surface-border)', outline: 'none' }}
+            />
+          </div>
+          <div>
             <button 
               type="submit" 
               className="btn-primary" 
@@ -720,6 +769,7 @@ export default function ScholarshipDashboard() {
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>YEAR</th>
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>TOTAL SAT</th>
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>PASSED</th>
+                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>SCORED &ge; 70%</th>
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>FAILED</th>
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>PASS RATE</th>
                         <th style={{ padding: '12px', textAlign: 'left', fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-muted)' }}>ACTIONS</th>
@@ -740,6 +790,11 @@ export default function ScholarshipDashboard() {
                                     {editingId === r.id ? (
                                         <input type="number" value={editValues.passCount} onChange={(e) => setEditValues({...editValues, passCount: e.target.value})} style={{ width: '80px', padding: '4px', borderRadius: '4px', border: '1px solid var(--surface-border)' }} />
                                     ) : r.pass_count}
+                                </td>
+                                <td style={{ padding: '12px', fontSize: '0.9rem', color: '#a855f7', fontWeight: '600' }}>
+                                    {editingId === r.id ? (
+                                        <input type="number" value={editValues.above70Count} onChange={(e) => setEditValues({...editValues, above70Count: e.target.value})} style={{ width: '80px', padding: '4px', borderRadius: '4px', border: '1px solid var(--surface-border)' }} />
+                                    ) : r.above_70_count || 0}
                                 </td>
                                 <td style={{ padding: '12px', fontSize: '0.9rem', color: 'var(--error)' }}>
                                     {editingId === r.id ? (
