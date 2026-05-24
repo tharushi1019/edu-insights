@@ -87,9 +87,10 @@ export default function ScholarshipDashboard() {
             const { data, error } = await supabase
               .from('exam_records')
               .select(`
-                  id, year, total_students, pass_count, fail_count, subject_id
+                  id, year, total_students, pass_count, fail_count, subject_id, exam_type
               `)
               .eq('user_id', user.id)
+              .eq('exam_type', 'SCHOLARSHIP')
               .in('subject_id', subjectIds)
               .order('year', { ascending: true });
             
@@ -370,8 +371,9 @@ export default function ScholarshipDashboard() {
               if (subjectIds.length > 0) {
                   const { data } = await supabase
                     .from('exam_records')
-                    .select(`id, year, total_students, pass_count, fail_count, subject_id`)
+                    .select(`id, year, total_students, pass_count, fail_count, subject_id, exam_type`)
                     .eq('user_id', user.id)
+                    .eq('exam_type', 'SCHOLARSHIP')
                     .in('subject_id', subjectIds)
                     .order('year', { ascending: true });
                   
@@ -438,7 +440,8 @@ export default function ScholarshipDashboard() {
           subject_id: subjectId,
           total_students: parseInt(formData.totalSat),
           pass_count: parseInt(formData.passCount),
-          fail_count: parseInt(formData.totalSat) - parseInt(formData.passCount)
+          fail_count: parseInt(formData.totalSat) - parseInt(formData.passCount),
+          exam_type: 'SCHOLARSHIP'
         });
 
       if (error) throw error;
@@ -449,8 +452,9 @@ export default function ScholarshipDashboard() {
       // Refresh data
       const { data: updatedData } = await supabase
         .from('exam_records')
-        .select(`id, year, total_students, pass_count, fail_count, subject_id`)
+        .select(`id, year, total_students, pass_count, fail_count, subject_id, exam_type`)
         .eq('user_id', user.id)
+        .eq('exam_type', 'SCHOLARSHIP')
         .eq('subject_id', subjectId)
         .order('year', { ascending: true });
       

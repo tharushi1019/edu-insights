@@ -74,6 +74,27 @@ export const translations = {
     subjectTrend: "Multi-Year Subject Trend Report",
     absentCount: "Absent (ab)",
     passRatePercent: "Pass Rate %",
+
+    // O/L Page
+    olPerformance: "G.C.E. O/L Performance",
+    olSubtitle: "Analytics and records for Ordinary Level examinations.",
+    selectYear: "Select Year",
+    academicYear: "Academic Year",
+    allYears: "All Years",
+    allSubjects: "All Subjects",
+    subjectPerformance: "Subject Performance",
+    overallDistribution: "Overall Distribution",
+    participationAndSuccess: "Participation & Success",
+    passRateTrend: "Pass Rate Trend",
+    totalPassed: "Total Passed",
+    report: "Report",
+    newRecord: "New Record",
+    examModule: "Exam Module",
+
+    // A/L Page
+    alPerformance: "G.C.E. A/L Performance",
+    alSubtitle: "Analytics and records for Advanced Level examinations.",
+    addAlRecord: "Add A/L Record",
   },
   si: {
     // Sidebar / Navigation
@@ -147,5 +168,26 @@ export const translations = {
     subjectTrend: "බහු-වසර විෂය ප්‍රගති විශ්ලේෂණය",
     absentCount: "නොපැමිණි (ab)",
     passRatePercent: "ප්‍රතිශතය %",
+
+    // O/L Page
+    olPerformance: "අ.පො.ස (සා.පෙළ) කාර්යසාධනය",
+    olSubtitle: "සාමාන්‍ය පෙළ විභාග සඳහා විශ්ලේෂණ සහ වාර්තා.",
+    selectYear: "වර්ෂය තෝරන්න",
+    academicYear: "අධ්‍යයන වර්ෂය",
+    allYears: "සියලුම වර්ෂ",
+    allSubjects: "සියලුම විෂයයන්",
+    subjectPerformance: "විෂය කාර්යසාධනය",
+    overallDistribution: "සමස්ත ව්‍යාප්තිය",
+    participationAndSuccess: "සහභාගීත්වය සහ සාර්ථකත්වය",
+    passRateTrend: "සමත් ප්‍රතිශත ප්‍රවණතාව",
+    totalPassed: "සමත් මුළු ගණන",
+    report: "වාර්තාව",
+    newRecord: "නව වාර්තාවක්",
+    examModule: "විභාග මොඩියුලය",
+
+    // A/L Page
+    alPerformance: "අ.පො.ස (උ.පෙළ) කාර්යසාධනය",
+    alSubtitle: "උසස් පෙළ විභාග සඳහා විශ්ලේෂණ සහ වාර්තා.",
+    addAlRecord: "උසස් පෙළ වාර්තාවක් එක් කරන්න",
   }
 };
