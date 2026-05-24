@@ -28,10 +28,6 @@ export default function AdminStudentsPage() {
   const [actionStatus, setActionStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
   const fetchStudents = async () => {
     setLoading(true);
     try {
@@ -54,6 +50,10 @@ export default function AdminStudentsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();

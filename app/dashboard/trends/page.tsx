@@ -54,7 +54,7 @@ export default function TrendsPage() {
         const { data, error } = await supabase
           .from('exam_records')
           .select(`
-              id, year, total_students, pass_count, fail_count,
+              id, year, total_students, pass_count, fail_count, exam_type,
               subjects (name)
           `)
           .eq('user_id', user.id)
@@ -86,17 +86,17 @@ export default function TrendsPage() {
   useEffect(() => {
     if (records.length === 0) return;
 
-    const trendYears = [...new Set(records.map(r => r.year))].sort((a, b) => a - b).slice(-5);
-    let yearlyTotal: number[] = [];
-    let yearlyAvgPass: number[] = [];
-
-    // Filter records by exam type
+    // Filter records by exam type first
     const examRecs = records.filter(r => {
-        if (selectedExam === 'AL') return r.subjects?.name.includes('(A/L)');
-        if (selectedExam === 'OL') return !r.subjects?.name.includes('(A/L)') && !r.subjects?.name.includes('Scholarship') && !r.subjects?.name.includes('ශිෂ්‍යත්වය');
-        if (selectedExam === 'Scholarship') return r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය');
+        if (selectedExam === 'AL') return r.exam_type === 'AL';
+        if (selectedExam === 'OL') return r.exam_type === 'OL';
+        if (selectedExam === 'Scholarship') return r.exam_type === 'SCHOLARSHIP';
         return true;
     });
+
+    const trendYears = [...new Set(examRecs.map(r => r.year))].sort((a, b) => a - b).slice(-5);
+    let yearlyTotal: number[] = [];
+    let yearlyAvgPass: number[] = [];
 
     if (selectedExam === 'Scholarship' || trendSubject === 'All Subjects') {
         yearlyTotal = trendYears.map(y => {

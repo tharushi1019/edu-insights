@@ -107,7 +107,7 @@ export default function Dashboard() {
         const { data, error } = await supabase
           .from('exam_records')
           .select(`
-              id, year, total_students, pass_count, fail_count, subject_id, term, a_count, b_count, c_count, s_count, w_count,
+              id, year, total_students, pass_count, fail_count, subject_id, term, a_count, b_count, c_count, s_count, w_count, exam_type,
               subjects (name)
           `)
           .eq('user_id', user.id)
@@ -172,7 +172,13 @@ export default function Dashboard() {
     });
 
     // --- 2. Chart: Yearly Trends (5 Year) ---
-    const years = [...new Set(records.map(r => r.year))].sort();
+    const examRecs = records.filter(r => {
+      if (selectedExam === 'AL') return r.exam_type === 'AL';
+      if (selectedExam === 'OL') return r.exam_type === 'OL';
+      if (selectedExam === 'Scholarship') return r.exam_type === 'SCHOLARSHIP';
+      return true;
+    });
+    const years = [...new Set(examRecs.map(r => r.year))].sort();
     
     let trendData: number[] = [];
     let trendLabel = '';
@@ -187,7 +193,7 @@ export default function Dashboard() {
       trendColor = '#059669';
       trendBgColor = 'rgba(5, 150, 105, 0.1)';
       trendData = years.map(y => {
-        const yearRecs = records.filter(r => r.year === y && r.subjects?.name.includes('(A/L)'));
+        const yearRecs = records.filter(r => r.year === y && r.exam_type === 'AL');
         const filteredRecs = selectedSubject === 'All Subjects' 
           ? yearRecs 
           : yearRecs.filter(r => r.subjects?.name === selectedSubject);
@@ -200,7 +206,7 @@ export default function Dashboard() {
       trendColor = '#3b82f6';
       trendBgColor = 'rgba(59, 130, 246, 0.1)';
       trendData = years.map(y => {
-        const yearRecs = records.filter(r => r.year === y && !r.subjects?.name.includes('(A/L)') && !r.subjects?.name.includes('Scholarship') && !r.subjects?.name.includes('ශිෂ්‍යත්වය'));
+        const yearRecs = records.filter(r => r.year === y && r.exam_type === 'OL');
         const filteredRecs = selectedSubject === 'All Subjects' 
           ? yearRecs 
           : yearRecs.filter(r => r.subjects?.name === selectedSubject);
@@ -214,16 +220,16 @@ export default function Dashboard() {
       trendBgColor = 'rgba(245, 158, 11, 0.1)';
       
       participationData = years.map(y => {
-        const yearRecs = records.filter(r => r.year === y && (r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය')));
+        const yearRecs = records.filter(r => r.year === y && r.exam_type === 'SCHOLARSHIP');
         return yearRecs.reduce((acc, r) => acc + r.total_students, 0);
       });
       successData = years.map(y => {
-        const yearRecs = records.filter(r => r.year === y && (r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය')));
+        const yearRecs = records.filter(r => r.year === y && r.exam_type === 'SCHOLARSHIP');
         return yearRecs.reduce((acc, r) => acc + r.pass_count, 0);
       });
       
       trendData = years.map(y => {
-        const yearRecs = records.filter(r => r.year === y && (r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය')));
+        const yearRecs = records.filter(r => r.year === y && r.exam_type === 'SCHOLARSHIP');
         const total = yearRecs.reduce((acc, r) => acc + r.total_students, 0);
         const pass = yearRecs.reduce((acc, r) => acc + r.pass_count, 0);
         return total > 0 ? Math.round((pass / total) * 100) : 0;
@@ -242,15 +248,15 @@ export default function Dashboard() {
     const latestYear = records.length > 0 ? Math.max(...records.map(r => r.year)) : 0;
     const latestYearRecs = records.filter(r => r.year === latestYear);
 
-    const olLatestRecs = latestYearRecs.filter(r => !r.subjects?.name.includes('(A/L)') && !r.subjects?.name.includes('Scholarship') && !r.subjects?.name.includes('ශිෂ්‍යත්වය'));
+    const olLatestRecs = latestYearRecs.filter(r => r.exam_type === 'OL');
     const olLabels = olLatestRecs.map(r => r.subjects?.name);
     const olPassRates = olLatestRecs.map(r => r.total_students > 0 ? Math.round((r.pass_count / r.total_students) * 100) : 0);
 
-    const alLatestRecs = latestYearRecs.filter(r => r.subjects?.name.includes('(A/L)'));
+    const alLatestRecs = latestYearRecs.filter(r => r.exam_type === 'AL');
     const alLabels = alLatestRecs.map(r => r.subjects?.name);
     const alPassRates = alLatestRecs.map(r => r.total_students > 0 ? Math.round((r.pass_count / r.total_students) * 100) : 0);
 
-    const schLatestRecs = latestYearRecs.filter(r => r.subjects?.name.includes('Scholarship') || r.subjects?.name.includes('ශිෂ්‍යත්වය'));
+    const schLatestRecs = latestYearRecs.filter(r => r.exam_type === 'SCHOLARSHIP');
     const schLabels = schLatestRecs.map(r => r.subjects?.name);
     const schSatCounts = schLatestRecs.map(r => r.total_students);
     const schPassCounts = schLatestRecs.map(r => r.pass_count);
